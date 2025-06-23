@@ -10,30 +10,64 @@ using NewsAI.Negocio.Servicios;
 using NewsAI.Negocio.Interfaces.Agentes;
 using NewsAI.Negocio.Services.Agentes;
 using NewsAI.Negocio.Agentes;
+
 var builder = WebApplication.CreateBuilder(args);
 
-// Add services to the container.
+// ===== CONFIGURAR PUERTO PARA RAILWAY =====
+var port = Environment.GetEnvironmentVariable("PORT") ?? "10000";
+builder.WebHost.UseUrls($"http://0.0.0.0:{port}");
 
+// Add services to the container.
 builder.Services.AddControllers();
-// Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 builder.Services.AddAutoMapper(typeof(ConfiguracionProfile));
 builder.Services.AddAutoMapper(typeof(UsuarioProfile));
 
-var openAIKey = builder.Configuration["OpenAI:ApiKey"];
-var modelOpenAI = builder.Configuration["OpenAI:Model"];
-var kernel = Kernel.CreateBuilder()
-    .AddOpenAIChatCompletion(modelOpenAI, openAIKey)
-    .Build();
+// ===== SEMANTIC KERNEL CON PROTECCIÓN =====
+var openAIKey = Environment.GetEnvironmentVariable("SEMANTIC_KERNEL_API_KEY") 
+    ?? builder.Configuration["OpenAI:ApiKey"] 
+    ?? "dummy-key"; // Para evitar crash
+var modelOpenAI = builder.Configuration["OpenAI:Model"] ?? "gpt-4";
 
-builder.Services.AddDbContext<AppDbContext>(options =>
-    options.UseSqlite("Data Source=newsAI.db", sqLiteOptions =>
+Kernel? kernel = null;
+try 
+{
+    if (openAIKey != "dummy-key")
     {
-        sqLiteOptions.CommandTimeout(30); // Timeout más largo
-    }));
+        kernel = Kernel.CreateBuilder()
+            .AddOpenAIChatCompletion(modelOpenAI, openAIKey)
+            .Build();
+    }
+}
+catch (Exception ex)
+{
+    Console.WriteLine($"Warning: Could not initialize Semantic Kernel: {ex.Message}");
+}
 
-builder.Services.AddSingleton(kernel);
+// ===== BASE DE DATOS (SOLO UNA VEZ) =====
+builder.Services.AddDbContext<AppDbContext>(options =>
+{
+    var connectionString = Environment.GetEnvironmentVariable("DATABASE_URL") ?? "Data Source=/tmp/newsAI.db";
+    options.UseSqlite(connectionString, sqliteOptions =>
+    {
+        sqliteOptions.CommandTimeout(30);
+    });
+    
+    if (builder.Environment.IsDevelopment())
+    {
+        options.EnableSensitiveDataLogging();
+        options.EnableDetailedErrors();
+    }
+});
+
+// ===== SERVICIOS =====
+if (kernel != null)
+{
+    builder.Services.AddSingleton(kernel);
+    // Registrar el plugin solo si kernel existe
+    kernel.ImportPluginFromType<SummarizePlugin>();
+}
 
 builder.Services.AddHttpClient<NoticiasExtractorService>();
 builder.Services.AddScoped<ISimuladorService, SimuladorService>();
@@ -46,6 +80,7 @@ builder.Services.AddScoped<IConfiguracionRepository, ConfiguracionRepository>();
 builder.Services.AddScoped<RssReaderService>();
 builder.Services.AddScoped<IUrlConfiableRepository, UrlConfiableRepository>();
 builder.Services.AddScoped<IEjecucionProgramadaRepository, EjecucionProgramadaRepository>();
+
 // Agentes de IA
 builder.Services.AddScoped<IAgenteClasificador, AgenteClasificador>();
 builder.Services.AddScoped<IAgenteFiltrador, AgenteFiltrador>();
@@ -58,47 +93,33 @@ builder.Services.AddHostedService<SchedulingService>();
 // Servicio de base de conocimiento
 builder.Services.AddScoped<IConocimientoBaseService, ConocimientoBaseService>();
 
-// Registrar el plugin
-kernel.ImportPluginFromType<SummarizePlugin>();
-
-// Configurar CORS para Astro
+// ===== CORS PERMISIVO PARA RAILWAY =====
 builder.Services.AddCors(options =>
 {
-    options.AddPolicy("AllowAstro", policy =>
+    options.AddDefaultPolicy(policy =>
     {
-        policy.WithOrigins(
-                "http://localhost:4321",
-                "https://localhost:4321",
-                "http://127.0.0.1:4321",
-                "https://127.0.0.1:4321"
-            )
-            .AllowAnyMethod()
-            .AllowAnyHeader()
-            .AllowCredentials()
-            .SetPreflightMaxAge(TimeSpan.FromSeconds(86400))
-            .WithExposedHeaders("*")
-            .SetIsOriginAllowed(origin => true); // MUY permisivo para debugging
+        policy.AllowAnyOrigin()
+              .AllowAnyMethod()
+              .AllowAnyHeader();
     });
 });
-builder.Services.AddDbContext<AppDbContext>(options =>
-{
-    var connectionString = "Data Source=newsAI.db";
-    
-    options.UseSqlite(connectionString, sqliteOptions =>
-    { 
-        sqliteOptions.CommandTimeout(30);
-    });
-    
-    if (builder.Environment.IsDevelopment())
-    {
-        options.EnableSensitiveDataLogging();
-        options.EnableDetailedErrors();
-    }
-});
-
-
 
 var app = builder.Build();
+
+// ===== CREAR BASE DE DATOS AUTOMÁTICAMENTE =====
+try 
+{
+    using (var scope = app.Services.CreateScope())
+    {
+        var context = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+        context.Database.EnsureCreated();
+        Console.WriteLine("Database initialized successfully");
+    }
+}
+catch (Exception ex)
+{
+    Console.WriteLine($"Warning: Could not initialize database: {ex.Message}");
+}
 
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
@@ -106,19 +127,20 @@ if (app.Environment.IsDevelopment())
     app.UseSwagger();
     app.UseSwaggerUI();
 }
-// IMPORTANTE: CORS debe ir antes de UseAuthorization
-app.UseCors("AllowAstro");
 
-
+// ===== MIDDLEWARE EN ORDEN CORRECTO =====
+app.UseCors();
+app.UseRouting();
+app.UseStaticFiles(); // Para servir archivos del frontend
 app.UseAuthorization();
-
 app.MapControllers();
 
-app.UseRouting();
+// ===== RUTAS DE PRUEBA =====
+app.MapGet("/", () => "NewsAI Backend está funcionando!");
+app.MapGet("/api/health", () => new { status = "OK", timestamp = DateTime.UtcNow });
 
-// Servir archivos estáticos del frontend
-app.UseStaticFiles();
-
-// Ruta fallback para la PWA
+// Ruta fallback para la PWA (solo si hay archivos)
 app.MapFallbackToFile("index.html");
+
+Console.WriteLine($"Starting NewsAI on port {port}");
 app.Run();
