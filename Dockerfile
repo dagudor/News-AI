@@ -1,12 +1,16 @@
-FROM mcr.microsoft.com/dotnet/aspnet:8.0
+FROM mcr.microsoft.com/dotnet/aspnet:8.0 AS base
 WORKDIR /app
-COPY publish/ .
 EXPOSE 10000
 
-# Variables de entorno
-ENV ASPNETCORE_URLS=http://+:10000
-ENV ASPNETCORE_ENVIRONMENT=Production
-ENV DOTNET_RUNNING_IN_CONTAINER=true
+FROM mcr.microsoft.com/dotnet/sdk:8.0 AS build
+WORKDIR /src
+COPY NewsAI/ ./
+RUN dotnet restore
+RUN dotnet publish -c Release -o /app/publish
 
-# Comando de inicio con logs
-CMD ["sh", "-c", "echo 'Starting NewsAI...' && dotnet NewsAI.dll"]
+FROM base AS final
+WORKDIR /app
+COPY --from=build /app/publish .
+
+ENV ASPNETCORE_URLS=http://+:10000
+ENTRYPOINT ["dotnet", "NewsAI.dll"]
