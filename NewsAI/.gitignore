@@ -1,0 +1,30 @@
+# Secretos y configuraciones sensibles
+appsettings.Development.json
+*.db
+*.db-shm
+*.db-wal
+
+# Build results
+bin/
+obj/
+out/
+
+# User-specific files
+*.rsuser
+*.suo
+*.user
+*.userosscache
+
+# Visual Studio
+.vs/
+*.vscode/
+
+# Logs
+logs/
+*.log
+
+# Node.js (para el frontend)
+node_modules/
+dist/
+.env
+.env.local

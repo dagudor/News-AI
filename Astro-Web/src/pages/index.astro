@@ -1,0 +1,911 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+export const prerender = false;
+---
+
+<BaseLayout title="Noticias IA - Inicio">
+  <section class="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100">
+    <!-- Hero Section -->
+    <div class="container mx-auto px-6 py-12">
+      <div class="text-center mb-12">
+        <h1 class="text-4xl md:text-6xl font-bold text-gray-800 mb-4">
+          Bienvenido a <span class="text-blue-600">NewsAI</span>
+        </h1>
+        <p class="text-xl text-gray-600 max-w-2xl mx-auto">
+          Tu asistente inteligente para mantenerte informado con resúmenes
+          personalizados de noticias
+        </p>
+      </div>
+
+      <!-- Sección de Resúmenes Recientes -->
+      <div class="mb-16">
+        <div class="flex justify-between items-center mb-8">
+          <h2 class="text-3xl font-bold text-gray-800">
+            📰 Tus Resúmenes Recientes
+          </h2>
+          <a
+            href="/historial"
+            class="text-blue-600 hover:text-blue-800 font-medium transition-colors"
+          >
+            Ver todos →
+          </a>
+        </div>
+
+        <!-- Carrusel Container -->
+        <div id="carrusel-container" class="relative">
+          <!-- Loading State -->
+          <div
+            id="loading-carrusel"
+            class="flex justify-center items-center h-64"
+          >
+            <div
+              class="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"
+            >
+            </div>
+            <span class="ml-3 text-gray-600">Cargando resúmenes...</span>
+          </div>
+
+          <!-- Empty State -->
+          <div id="empty-carrusel" class="hidden text-center py-16">
+            <div class="text-6xl mb-4">📝</div>
+            <h3 class="text-xl font-semibold text-gray-700 mb-2">
+              ¡Aún no tienes resúmenes!
+            </h3>
+            <p class="text-gray-600 mb-6">
+              Crea tu primera configuración y prueba el simulador
+            </p>
+            <a
+              href="/simulador"
+              class="bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-lg font-medium transition"
+            >
+              Probar Simulador
+            </a>
+          </div>
+
+          <!-- Carrusel de Cards -->
+          <div id="carrusel-wrapper" class="hidden">
+            <!-- Navegación Izquierda -->
+            <button
+              id="prev-btn"
+              class="absolute left-0 top-1/2 transform -translate-y-1/2 z-10 bg-white hover:bg-gray-50 rounded-full shadow-lg p-3 transition-all hover:scale-110"
+            >
+              <svg
+                class="w-6 h-6 text-gray-600"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  stroke-width="2"
+                  d="M15 19l-7-7 7-7"></path>
+              </svg>
+            </button>
+
+            <!-- Container de Cards -->
+            <div
+              id="carrusel-track"
+              class="flex transition-transform duration-500 ease-in-out mx-12"
+            >
+              <!-- Las cards se generarán dinámicamente aquí -->
+            </div>
+
+            <!-- Navegación Derecha -->
+            <button
+              id="next-btn"
+              class="absolute right-0 top-1/2 transform -translate-y-1/2 z-10 bg-white hover:bg-gray-50 rounded-full shadow-lg p-3 transition-all hover:scale-110"
+            >
+              <svg
+                class="w-6 h-6 text-gray-600"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  stroke-width="2"
+                  d="M9 5l7 7-7 7"></path>
+              </svg>
+            </button>
+
+            <!-- Indicadores (dots) -->
+            <div id="carrusel-dots" class="flex justify-center mt-6 space-x-2">
+              <!-- Los dots se generarán dinámicamente -->
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Sección de Acciones Rápidas -->
+      <div class="grid md:grid-cols-3 gap-8 mb-16">
+        <!-- Card Simulador -->
+        <div
+          class="bg-white rounded-xl shadow-lg p-8 hover:shadow-xl transition-shadow"
+        >
+          <div class="text-4xl mb-4">🚀</div>
+          <h3 class="text-xl font-bold text-gray-800 mb-2">Probar Simulador</h3>
+          <p class="text-gray-600 mb-4">
+            Genera un resumen personalizado desde cualquier URL de noticias
+          </p>
+          <a
+            href="/simulador"
+            class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg font-medium transition block text-center"
+          >
+            Comenzar
+          </a>
+        </div>
+
+        <!-- Card Configuración -->
+        <div
+          class="bg-white rounded-xl shadow-lg p-8 hover:shadow-xl transition-shadow"
+        >
+          <div class="text-4xl mb-4">⚙️</div>
+          <h3 class="text-xl font-bold text-gray-800 mb-2">
+            Mis Configuraciones
+          </h3>
+          <p class="text-gray-600 mb-4">
+            Crea y gestiona tus configuraciones de resumen personalizadas
+          </p>
+          <a
+            href="/configuracion?tab=configuracion"
+            class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg font-medium transition block text-center"
+          >
+            Gestionar
+          </a>
+        </div>
+
+        <!-- Card URLs -->
+        <div
+          class="bg-white rounded-xl shadow-lg p-8 hover:shadow-xl transition-shadow"
+        >
+          <div class="text-4xl mb-4">🔗</div>
+          <h3 class="text-xl font-bold text-gray-800 mb-2">URLs Confiables</h3>
+          <p class="text-gray-600 mb-4">
+            Administra tus fuentes de noticias de confianza
+          </p>
+          <a
+            href="/configuracion?tab=urls"
+            class="bg-purple-600 hover:bg-purple-700 text-white px-4 py-2 rounded-lg font-medium transition block text-center"
+          >
+            Ver URLs
+          </a>
+        </div>
+      </div>
+    </div>
+
+    <!-- Modal para Detalle de Resumen -->
+    <div
+      id="modal-detalle"
+      class="fixed inset-0 bg-black bg-opacity-50 hidden z-50"
+      onclick="cerrarModalDetalle()"
+    >
+      <div class="flex items-center justify-center min-h-screen p-4">
+        <div
+          class="bg-white rounded-xl shadow-2xl max-w-4xl w-full max-h-[90vh] overflow-y-auto"
+          onclick="event.stopPropagation()"
+        >
+          <!-- Header del Modal -->
+          <div
+            class="sticky top-0 bg-white border-b border-gray-200 p-6 rounded-t-xl"
+          >
+            <div class="flex justify-between items-start">
+              <div>
+                <h2 id="modal-titulo" class="text-2xl font-bold text-gray-800">
+                  Resumen Detallado
+                </h2>
+                <p id="modal-fecha" class="text-gray-600 mt-1">Cargando...</p>
+              </div>
+              <button
+                onclick="cerrarModalDetalle()"
+                class="text-gray-500 hover:text-gray-700 p-2"
+              >
+                <svg
+                  class="w-6 h-6"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    stroke-width="2"
+                    d="M6 18L18 6M6 6l12 12"></path>
+                </svg>
+              </button>
+            </div>
+          </div>
+
+          <!-- Contenido del Modal -->
+          <div class="p-6">
+            <!-- Metadatos -->
+            <div
+              class="grid md:grid-cols-3 gap-4 mb-6 p-4 bg-gray-50 rounded-lg"
+            >
+              <div class="text-center">
+                <div
+                  id="modal-noticias"
+                  class="text-2xl font-bold text-blue-600"
+                >
+                  -
+                </div>
+                <div class="text-sm text-gray-600">Noticias Procesadas</div>
+              </div>
+              <div class="text-center">
+                <div
+                  id="modal-tiempo-lectura"
+                  class="text-2xl font-bold text-green-600"
+                >
+                  -
+                </div>
+                <div class="text-sm text-gray-600">Tiempo de Lectura</div>
+              </div>
+              <div class="text-center">
+                <div id="modal-email-estado" class="text-2xl">📧</div>
+                <div class="text-sm text-gray-600">Email Enviado</div>
+              </div>
+            </div>
+
+            <!-- Configuración Usada -->
+            <div class="mb-6 p-4 border border-gray-200 rounded-lg">
+              <h4 class="font-semibold text-gray-700 mb-3">
+                Configuración Utilizada
+              </h4>
+              <div class="grid md:grid-cols-2 gap-3 text-sm">
+                <div>
+                  <span class="text-gray-600">Hashtags:</span>
+                  <span id="modal-config-hashtags" class="ml-2 font-medium"
+                    >-</span
+                  >
+                </div>
+                <div>
+                  <span class="text-gray-600">Tono:</span>
+                  <span id="modal-config-tono" class="ml-2 font-medium">-</span>
+                </div>
+                <div>
+                  <span class="text-gray-600">Profundidad:</span>
+                  <span id="modal-config-profundidad" class="ml-2 font-medium"
+                    >-</span
+                  >
+                </div>
+                <div>
+                  <span class="text-gray-600">Acción:</span>
+                  <span id="modal-config-accion" class="ml-2 font-medium"
+                    >-</span
+                  >
+                </div>
+              </div>
+            </div>
+
+            <!-- Resumen Completo -->
+            <div class="mb-6">
+              <h4 class="font-semibold text-gray-700 mb-3">Resumen Completo</h4>
+              <div
+                id="modal-contenido"
+                class="prose prose-gray max-w-none bg-gray-50 p-6 rounded-lg leading-relaxed"
+              >
+                Cargando contenido...
+              </div>
+            </div>
+
+            <!-- URL Original -->
+            <div class="border-t border-gray-200 pt-4">
+              <h4 class="font-semibold text-gray-700 mb-2">Fuente Original</h4>
+              <a
+                id="modal-url-origen"
+                href="#"
+                target="_blank"
+                class="text-blue-600 hover:text-blue-800 break-all text-sm"
+              >
+                Cargando URL...
+              </a>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- JavaScript del Carrusel -->
+  <script>
+    // Variables globales
+    let resumenes = [];
+    let currentStartIndex = 0;
+    const cardsPerView = 3;
+    let usuarioId = null; // Se asignará después del login
+    const API_BASE_URL = "https://localhost:7298";
+
+    // PROTECCIÓN DE PÁGINA
+    document.addEventListener('DOMContentLoaded', function() {
+      // Esperamos un poco más para asegurar que el AuthManager esté completamente cargado
+      setTimeout(() => {
+        // Verificar autenticación antes de cargar contenido
+        if (!window.requireAuth()) {
+          return; // Se redirige automáticamente si no está autenticado
+        }
+        
+        // Obtener ID del usuario autenticado
+        usuarioId = window.getCurrentUserId();
+        
+        if (!usuarioId) {
+          console.error(' No se pudo obtener el ID del usuario autenticado');
+          // Intentar de nuevo después de un momento
+          setTimeout(() => {
+            usuarioId = window.getCurrentUserId();
+            if (usuarioId) {
+              console.log(' Usuario autenticado (segundo intento), ID:', usuarioId);
+              cargarResumenes();
+            } else {
+              console.error(' Aún no se puede obtener el ID del usuario, redirigiendo...');
+              window.location.href = '/login';
+            }
+          }, 1000);
+          return;
+        }
+        
+        console.log(' Usuario autenticado, ID:', usuarioId);
+        
+        // Inicializar la página
+        console.log('🚀 Inicializando carrusel de resúmenes');
+        cargarResumenes();
+      }, 500); // Esperamos 500ms para que el AuthManager esté listo
+    });
+
+    // ===== FUNCIÓN PRINCIPAL: CARGAR RESÚMENES =====
+    async function cargarResumenes() {
+      try {
+        console.log('🔍 Cargando resúmenes recientes...');
+
+        const response = await fetch(
+          `${API_BASE_URL}/api/simulador/historial/${usuarioId}?limite=30`,
+        );
+        const data = await response.json();
+
+        if (data.success && data.data && data.data.length > 0) {
+          resumenes = data.data;
+          console.log(`${resumenes.length} resúmenes cargados`);
+
+          // Decidir qué tipo de carrusel mostrar
+          if (resumenes.length <= 3) {
+            mostrarCarruselEstatico();
+          } else {
+            mostrarCarruselDeslizante();
+          }
+        } else {
+          console.log('ℹ️ No hay resúmenes disponibles');
+          mostrarEstadoVacio();
+        }
+      } catch (error) {
+        console.error(' Error cargando resúmenes:', error);
+        mostrarEstadoVacio();
+      } finally {
+        document.getElementById('loading-carrusel').classList.add('hidden');
+      }
+    }
+
+    // ===== CARRUSEL ESTÁTICO (3 o menos cards) =====
+    function mostrarCarruselEstatico() {
+      console.log('📱 Mostrando carrusel estático');
+      document.getElementById('carrusel-wrapper').classList.remove('hidden');
+
+      // Ocultar navegación (no la necesitamos)
+      document.getElementById('prev-btn').style.display = 'none';
+      document.getElementById('next-btn').style.display = 'none';
+      document.getElementById('carrusel-dots').style.display = 'none';
+
+      // Mostrar todas las cards disponibles
+      generarCards(resumenes);
+
+      // Ajustar grid para centrado
+      const track = document.getElementById('carrusel-track');
+      track.style.display = 'grid';
+      track.style.gridTemplateColumns = `repeat(${resumenes.length}, 1fr)`;
+      track.style.gap = '1.5rem';
+      track.style.transform = 'none';
+    }
+
+    // ===== CARRUSEL DESLIZANTE (más de 3 cards) =====
+    function mostrarCarruselDeslizante() {
+      console.log('🎠 Mostrando carrusel deslizante');
+      document.getElementById('carrusel-wrapper').classList.remove('hidden');
+
+      // Mostrar navegación
+      document.getElementById('prev-btn').style.display = 'block';
+      document.getElementById('next-btn').style.display = 'block';
+      document.getElementById('carrusel-dots').style.display = 'flex';
+
+      // Configurar navegación
+      configurarNavegacionDeslizante();
+
+      // Mostrar ventana inicial (primeras 3)
+      currentStartIndex = 0;
+      mostrarVentanaActual();
+
+      // Generar dots personalizados
+      generarDotsPersonalizados();
+    }
+
+    // ===== NÚCLEO: MOSTRAR VENTANA ACTUAL DE 3 CARDS =====
+    function mostrarVentanaActual() {
+      // Calcular qué cards mostrar (ventana de 3)
+      const ventanaActual = resumenes.slice(
+        currentStartIndex,
+        currentStartIndex + cardsPerView,
+      );
+
+      // Generar las 3 cards visibles
+      generarCards(ventanaActual);
+
+      // Actualizar controles
+      actualizarEstadoBotones();
+      actualizarDotsPersonalizados();
+
+      console.log(
+        `Mostrando cards ${currentStartIndex + 1}-${currentStartIndex + ventanaActual.length} de ${resumenes.length}`,
+      );
+    }
+
+    // ===== NAVEGACIÓN DESLIZANTE =====
+    function configurarNavegacionDeslizante() {
+      document.getElementById('prev-btn').onclick = () => deslizarIzquierda();
+      document.getElementById('next-btn').onclick = () => deslizarDerecha();
+    }
+
+    // DESLIZAR HACIA LA IZQUIERDA (mostrar anteriores)
+    function deslizarIzquierda() {
+      if (currentStartIndex > 0) {
+        currentStartIndex--;
+        mostrarVentanaActual();
+        animarTransicion('left');
+      }
+    }
+
+    // DESLIZAR HACIA LA DERECHA (mostrar siguientes)
+    function deslizarDerecha() {
+      const maxStartIndex = resumenes.length - cardsPerView;
+      if (currentStartIndex < maxStartIndex) {
+        currentStartIndex++;
+        mostrarVentanaActual();
+        animarTransicion('right');
+      }
+    }
+
+    // ===== ANIMACIÓN DE TRANSICIÓN SUAVE =====
+    function animarTransicion(direction) {
+      const track = document.getElementById('carrusel-track');
+
+      // Añadir clase de transición
+      track.classList.add('transitioning');
+
+      // Pequeño desplazamiento para el efecto visual
+      if (direction === 'right') {
+        track.style.transform = 'translateX(-10px)';
+      } else {
+        track.style.transform = 'translateX(10px)';
+      }
+
+      // Volver a posición normal
+      setTimeout(() => {
+        track.style.transform = 'translateX(0)';
+        track.classList.remove('transitioning');
+      }, 150);
+    }
+
+    // ===== ACTUALIZAR ESTADO DE BOTONES =====
+    function actualizarEstadoBotones() {
+      const prevBtn = document.getElementById('prev-btn');
+      const nextBtn = document.getElementById('next-btn');
+
+      // Botón anterior
+      if (currentStartIndex === 0) {
+        prevBtn.style.opacity = '0.4';
+        prevBtn.style.cursor = 'not-allowed';
+      } else {
+        prevBtn.style.opacity = '1';
+        prevBtn.style.cursor = 'pointer';
+      }
+
+      // Botón siguiente
+      const maxStartIndex = resumenes.length - cardsPerView;
+      if (currentStartIndex >= maxStartIndex) {
+        nextBtn.style.opacity = '0.4';
+        nextBtn.style.cursor = 'not-allowed';
+      } else {
+        nextBtn.style.opacity = '1';
+        nextBtn.style.cursor = 'pointer';
+      }
+    }
+
+    // ===== DOTS PERSONALIZADOS PARA VENTANA DESLIZANTE =====
+    function generarDotsPersonalizados() {
+      const dotsContainer = document.getElementById('carrusel-dots');
+      dotsContainer.innerHTML = '';
+
+      // Calcular número de posiciones posibles de la ventana
+      const totalVentanas = Math.max(0, resumenes.length - cardsPerView + 1);
+
+      for (let i = 0; i < totalVentanas; i++) {
+        const dot = document.createElement('button');
+        dot.className = `w-2 h-2 rounded-full transition-all mx-1 ${
+          i === currentStartIndex
+            ? 'bg-blue-600 w-6'
+            : 'bg-gray-300 hover:bg-gray-400'
+        }`;
+        dot.onclick = () => irAVentana(i);
+        dotsContainer.appendChild(dot);
+      }
+    }
+
+    // IR DIRECTAMENTE A UNA VENTANA ESPECÍFICA
+    function irAVentana(ventanaIndex) {
+      const maxStartIndex = resumenes.length - cardsPerView;
+      currentStartIndex = Math.max(0, Math.min(ventanaIndex, maxStartIndex));
+      mostrarVentanaActual();
+      animarTransicion('right');
+    }
+
+    // ===== ACTUALIZAR DOTS CUANDO CAMBIA LA VENTANA =====
+    function actualizarDotsPersonalizados() {
+      const dots = document.querySelectorAll('#carrusel-dots button');
+      dots.forEach((dot, index) => {
+        if (index === currentStartIndex) {
+          dot.className =
+            'w-6 h-2 rounded-full transition-all mx-1 bg-blue-600';
+        } else {
+          dot.className =
+            'w-2 h-2 rounded-full transition-all mx-1 bg-gray-300 hover:bg-gray-400';
+        }
+      });
+    }
+
+    // ===== GENERAR CARDS HTML =====
+    function generarCards(resumenesParaMostrar) {
+      const track = document.getElementById('carrusel-track');
+      track.innerHTML = '';
+
+      // Resetear estilos del track para el grid
+      track.style.display = 'grid';
+      track.style.gridTemplateColumns = 'repeat(3, 1fr)';
+      track.style.gap = '1.5rem';
+      track.style.transform = 'none';
+
+      resumenesParaMostrar.forEach((resumen, index) => {
+        const card = document.createElement('div');
+        card.className = 'card-slide-in relative';
+
+        // Determinar color del badge según el estado
+        const badgeColor = resumen.emailEnviado
+          ? 'bg-green-100 text-green-800'
+          : 'bg-yellow-100 text-yellow-800';
+        const badgeText = resumen.emailEnviado ? '✓ Enviado' : '⏳ Pendiente';
+
+        // Seguridad para datos que pueden estar undefined
+        const titulo = resumen.titulo || 'Resumen sin título';
+        const extracto =
+          resumen.extracto ||
+          resumen.contenidoResumen?.substring(0, 150) + '...' ||
+          'Sin contenido disponible';
+        const noticiasProcessadas = resumen.noticiasProcessadas || 0;
+        const palabrasResumen = resumen.estadisticas?.palabrasResumen || 0;
+        const tono = resumen.configuracion?.tono || 'Por determinar';
+        const hashtags = resumen.configuracion?.hashtags || '';
+
+        card.innerHTML = `
+        <div class="bg-white rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1 cursor-pointer h-full"
+             onclick="abrirModalDetalle(${resumen.id})">
+          
+          <!-- Indicador de posición -->
+          <div class="absolute top-2 left-2 bg-blue-600 text-white text-xs px-2 py-1 rounded-full z-10">
+            ${currentStartIndex + index + 1}/${resumenes.length}
+          </div>
+          
+          <!-- Header de la Card -->
+          <div class="p-6 border-b border-gray-100">
+            <div class="flex justify-between items-start mb-3">
+              <span class="px-3 py-1 ${badgeColor} rounded-full text-xs font-medium">
+                ${badgeText}
+              </span>
+              <span class="text-xs text-gray-500">${resumen.fechaRelativa}</span>
+            </div>
+            
+            <h3 class="font-bold text-gray-800 text-lg mb-2 line-clamp-2">
+              ${titulo}
+            </h3>
+            
+            <p class="text-gray-600 text-sm line-clamp-3 leading-relaxed">
+              ${extracto}
+            </p>
+          </div>
+
+          <!-- Metadatos -->
+          <div class="p-4 bg-gray-50">
+            <div class="flex justify-between items-center text-xs text-gray-500">
+              <span>${noticiasProcessadas} noticias</span>
+              <span>${palabrasResumen} palabras</span>
+              <span>${tono}</span>
+            </div>
+          </div>
+
+          <!-- Footer con hashtags -->
+          <div class="p-4">
+            <div class="flex flex-wrap gap-1">
+              ${
+                hashtags && hashtags !== 'Por determinar'
+                  ? hashtags
+                      .split(',')
+                      .slice(0, 3)
+                      .map(
+                        (tag) =>
+                          `<span class="px-2 py-1 bg-blue-100 text-blue-800 rounded text-xs">${tag.trim()}</span>`,
+                      )
+                      .join('')
+                  : '<span class="text-xs text-gray-400">Sin hashtags</span>'
+              }
+            </div>
+          </div>
+        </div>
+      `;
+
+        track.appendChild(card);
+      });
+    }
+
+    // ===== MOSTRAR ESTADO VACÍO =====
+    function mostrarEstadoVacio() {
+      document.getElementById('empty-carrusel').classList.remove('hidden');
+    }
+
+    // ===== MODAL: ABRIR DETALLE COMPLETO =====
+    window.abrirModalDetalle = async function (resumenId) {
+      try {
+        console.log('🔍 Abriendo detalle del resumen:', resumenId);
+
+        // Mostrar modal con loading
+        document.getElementById('modal-detalle').classList.remove('hidden');
+        document.getElementById('modal-contenido').innerHTML =
+          'Cargando contenido...';
+
+        // Buscar el resumen en los datos cargados
+        const resumen = resumenes.find((r) => r.id === resumenId);
+
+        if (resumen) {
+          // Usar datos locales
+          mostrarDetalleResumen(resumen);
+        } else {
+          // Cargar desde API si no está en local
+          const response = await fetch(
+            `${API_BASE_URL}/api/simulador/resumen/${resumenId}`,
+          );
+          const data = await response.json();
+
+          if (data.success) {
+            mostrarDetalleResumen(data.data);
+          } else {
+            throw new Error('No se pudo cargar el resumen');
+          }
+        }
+      } catch (error) {
+        console.error(' Error cargando detalle:', error);
+        document.getElementById('modal-contenido').innerHTML =
+          'Error al cargar el contenido';
+      }
+    };
+
+    // Mostrar detalle en el modal
+    function mostrarDetalleResumen(resumen) {
+      document.getElementById('modal-titulo').textContent =
+        `Resumen del ${new Date(resumen.fechaGeneracion || Date.now()).toLocaleDateString()}`;
+      document.getElementById('modal-fecha').textContent =
+        resumen.fechaFormateada ||
+        new Date(resumen.fechaGeneracion || Date.now()).toLocaleDateString();
+      document.getElementById('modal-noticias').textContent =
+        resumen.noticiasProcessadas || 0;
+      document.getElementById('modal-tiempo-lectura').textContent =
+        Math.ceil((resumen.contenidoCompleto?.split(' ').length || 0) / 200) +
+        ' min';
+      document.getElementById('modal-email-estado').textContent =
+        resumen.emailEnviado ? '' : '⏳';
+
+      // Configuración
+      document.getElementById('modal-config-hashtags').textContent =
+        resumen.configuracion?.hashtags || 'Por determinar';
+      document.getElementById('modal-config-tono').textContent =
+        resumen.configuracion?.tono || 'Por determinar';
+      document.getElementById('modal-config-profundidad').textContent =
+        resumen.configuracion?.profundidad || 'Por determinar';
+      document.getElementById('modal-config-accion').textContent =
+        resumen.configuracion?.accion || 'Por determinar';
+
+      // Contenido
+      document.getElementById('modal-contenido').innerHTML = (
+        resumen.contenidoCompleto ||
+        resumen.contenidoResumen ||
+        'No hay contenido disponible'
+      ).replace(/\n/g, '<br>');
+
+      // URL
+      const urlLink = document.getElementById('modal-url-origen') as HTMLAnchorElement
+      urlLink.href = resumen.urlOrigen || '#';
+      urlLink.textContent = resumen.urlOrigen || 'No disponible';
+    }
+
+    // Cerrar modal
+    window.cerrarModalDetalle = function () {
+      document.getElementById('modal-detalle').classList.add('hidden');
+    };
+
+    // ===== NAVEGACIÓN CON TECLADO =====
+    document.addEventListener('keydown', function (e) {
+      if (resumenes.length > 3) {
+        if (e.key === 'ArrowLeft') {
+          deslizarIzquierda();
+        } else if (e.key === 'ArrowRight') {
+          deslizarDerecha();
+        }
+      }
+
+      // Cerrar modal con Escape
+      if (e.key === 'Escape') {
+        window.cerrarModalDetalle();
+      }
+    });
+  </script>
+
+  <!-- Estilos CSS -->
+  <style>
+    /* ===== ESTILOS ORIGINALES ===== */
+    .line-clamp-2 {
+      display: -webkit-box;
+      -webkit-line-clamp: 2;
+      -webkit-box-orient: vertical;
+      overflow: hidden;
+    }
+
+    .line-clamp-3 {
+      display: -webkit-box;
+      -webkit-line-clamp: 3;
+      -webkit-box-orient: vertical;
+      overflow: hidden;
+    }
+
+    .prose {
+      line-height: 1.7;
+    }
+
+    .prose p {
+      margin-bottom: 1em;
+    }
+
+    /* ===== NUEVOS ESTILOS PARA CARRUSEL DE VENTANA DESLIZANTE ===== */
+
+    /* Animaciones para el carrusel deslizante */
+    .transitioning {
+      transition: transform 0.15s ease-out !important;
+    }
+
+    .card-slide-in {
+      animation: slideInFromRight 0.3s ease-out;
+    }
+
+    @keyframes slideInFromRight {
+      0% {
+        opacity: 0;
+        transform: translateX(20px);
+      }
+      100% {
+        opacity: 1;
+        transform: translateX(0);
+      }
+    }
+
+    /* Mejorar botones de navegación */
+    #prev-btn,
+    #next-btn {
+      transition: all 0.2s ease;
+      backdrop-filter: blur(10px);
+      background: rgba(255, 255, 255, 0.95);
+      border: 1px solid rgba(0, 0, 0, 0.1);
+    }
+
+    #prev-btn:hover,
+    #next-btn:hover {
+      background: rgba(255, 255, 255, 1);
+      transform: scale(1.05);
+      box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+    }
+
+    #prev-btn:active,
+    #next-btn:active {
+      transform: scale(0.95);
+    }
+
+    /* Dots para ventana deslizante */
+    #carrusel-dots button {
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    #carrusel-dots button:hover {
+      transform: scale(1.2);
+    }
+
+    /* Grid perfecto para 3 cards en todas las pantallas */
+    #carrusel-track {
+      display: grid !important;
+      grid-template-columns: repeat(3, 1fr) !important;
+      gap: 1.5rem !important;
+      transform: none !important;
+    }
+
+    /* Responsive: 2 cards en tablet, 1 en móvil */
+    @media (max-width: 1023px) {
+      #carrusel-track {
+        grid-template-columns: repeat(2, 1fr) !important;
+      }
+
+      /* Ocultar tercera card en tablet si existe */
+      #carrusel-track .card-slide-in:nth-child(3) {
+        display: none;
+      }
+    }
+
+    @media (max-width: 767px) {
+      #carrusel-track {
+        grid-template-columns: 1fr !important;
+      }
+
+      /* En móvil mostrar solo la primera card */
+      #carrusel-track .card-slide-in:not(:first-child) {
+        display: none;
+      }
+    }
+
+    /* Efectos hover para las cards */
+    .card-slide-in:hover {
+      transform: translateY(-2px);
+    }
+
+    /* Loading spinner */
+    .animate-spin {
+      animation: spin 1s linear infinite;
+    }
+
+    @keyframes spin {
+      from {
+        transform: rotate(0deg);
+      }
+      to {
+        transform: rotate(360deg);
+      }
+    }
+
+    /* Efectos de entrada para elementos */
+    .fade-in {
+      animation: fadeIn 0.5s ease-out;
+    }
+
+    @keyframes fadeIn {
+      from {
+        opacity: 0;
+        transform: translateY(10px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    /* Mejorar el aspecto del empty state */
+    #empty-carrusel {
+      background: rgba(255, 255, 255, 0.7);
+      backdrop-filter: blur(10px);
+      border-radius: 1rem;
+      margin: 2rem 0;
+    }
+
+    /* Mejorar cards de acciones rápidas */
+    .bg-white:hover {
+      transform: translateY(-2px);
+    }
+  </style>
+</BaseLayout>

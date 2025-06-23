@@ -1,0 +1,58 @@
+---
+// configuracion.astro
+import BaseLayout from '../layouts/BaseLayout.astro';
+import MenuLateral from '../components/MenuLateral.astro';
+import TabConfiguracion from '../components/TabConfiguracion.astro';
+import TabUsuario from '../components/TabUsuario.astro';
+import TabUrls from '../components/TabUrls.astro';
+
+export const prerender = false;
+
+// Obtener parámetros de la URL
+const url = new URL(Astro.request.url);
+const tab = url.searchParams.get('tab') ?? 'usuario';
+const subTab = url.searchParams.get('subtab') ?? 'crear';
+---
+
+<BaseLayout title="Configuración de Usuario">
+  <section class="flex justify-center px-6 py-12">
+    <div class="flex gap-6 max-w-5xl w-full">
+      <!-- Menú lateral -->
+      <MenuLateral tabActual={tab} />
+
+      <!-- Contenido dinámico -->
+      <div class="flex-1">
+        {tab === 'configuracion' && <TabConfiguracion subTab={subTab} />}
+        {tab === 'usuario' && <TabUsuario />}
+        {tab === 'urls' && <TabUrls />}
+      </div>
+    </div>
+  </section>
+
+  <!-- Script de protección de la pagina para requerir login -->
+  <script>
+    // ===== PROTECCIÓN DE PÁGINA =====
+    document.addEventListener('DOMContentLoaded', function() {
+      // Verificar autenticación antes de cargar contenido
+      if (!window.requireAuth()) {
+        return; // Se redirige automáticamente si no está autenticado
+      }
+      
+      // Obtener ID del usuario autenticado
+      const usuarioId = window.getCurrentUserId();
+      console.log('Usuario autenticado en configuración, ID:', usuarioId);
+      
+      // Actualizar cualquier variable global que necesiten los tabs
+      if (window.updateCurrentUserId) {
+        window.updateCurrentUserId(usuarioId);
+      }
+      
+      console.log('Página de configuración inicializada correctamente');
+    });
+
+    // Función global para que los componentes obtengan el ID del usuario
+    window.getCurrentUserIdForTabs = function() {
+      return window.getCurrentUserId();
+    };
+  </script>
+</BaseLayout>

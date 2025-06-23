@@ -1,0 +1,454 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+export const prerender = false;
+---
+
+<BaseLayout title="Simulador de Noticias IA">
+  <section class="flex justify-center px-6 py-12">
+    <div class="max-w-4xl w-full">
+      
+      <!-- Header -->
+      <div class="text-center mb-8">
+        <h1 class="text-3xl font-bold text-gray-800 mb-2">Simulador de NewsAI</h1>
+        <div class="bg-blue-50 border border-blue-200 rounded-lg p-4 mt-4">
+          <p class="text-blue-800 text-sm">
+            <strong>Versión Beta:</strong> Esta herramienta te permite probar cómo funcionará el sistema de resumen automático de noticias
+          </p>
+        </div>
+      </div>
+
+      <!-- Formulario principal -->
+      <div class="bg-white border border-gray-200 shadow-lg rounded-lg p-8 space-y-6">
+        
+        <form id="form-simulador" class="space-y-6">
+          <!-- URL de entrada -->
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-2">
+              URL de noticias RSS/Web
+            </label>
+            <input 
+              type="url" 
+              name="url_noticias" 
+              placeholder="https://ejemplo.com/rss" 
+              class="w-full p-3 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+              required
+            />
+            <p class="text-xs text-gray-500 mt-1">
+              Introduce la URL de un feed RSS o sitio web de noticias
+            </p>
+          </div>
+
+          <!-- Selector de configuración -->
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-2">
+              ¿Qué configuración aplicar?
+            </label>
+            <select 
+              name="configuracion_id" 
+              class="w-full p-3 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+              onchange="mostrarConfiguracionSeleccionada(this.value)"
+              id="select-configuracion-simulador"
+              required
+            >
+              <option value="">Seleccionar configuración...</option>
+            </select>
+          </div>
+
+          <!-- Vista previa de configuración seleccionada -->
+          <div id="configuracion-preview" class="bg-gray-50 border border-gray-200 rounded-lg p-4 space-y-3" style="display: none;">
+            <h3 class="text-sm font-semibold text-gray-700 border-b border-gray-200 pb-2">
+              Configuración seleccionada
+            </h3>
+            <div class="grid grid-cols-2 gap-3 text-sm">
+              <div>
+                <span class="text-gray-600">Hashtags:</span>
+                <span class="ml-2 font-medium text-gray-800" id="preview-hashtags">-</span>
+              </div>
+              <div>
+                <span class="text-gray-600">Profundidad:</span>
+                <span class="ml-2 font-medium text-gray-800" id="preview-profundidad">-</span>
+              </div>
+              <div>
+                <span class="text-gray-600">Tono:</span>
+                <span class="ml-2 font-medium text-gray-800" id="preview-tono">-</span>
+              </div>
+              <div>
+                <span class="text-gray-600">Salida:</span>
+                <span class="ml-2 font-medium text-gray-800" id="preview-accion">-</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Opciones adicionales -->
+          <div class="bg-blue-50 border border-blue-200 rounded-lg p-4">
+            <h4 class="font-medium text-blue-800 mb-3">Opciones de simulación</h4>
+            
+            <div class="space-y-3">
+              <label class="flex items-center">
+                <input type="checkbox" name="enviar_email" class="mr-3 text-blue-600" checked>
+                <span class="text-blue-700">Enviar resultado por email (solo para configuraciones de email)</span>
+              </label>
+              
+              <div>
+                <label class="block text-sm font-medium text-blue-700 mb-1">
+                  Límite de noticias a procesar
+                </label>
+                <select name="limite_noticias" class="w-32 p-2 border border-blue-300 rounded-md text-blue-700">
+                  <option value="5">5 noticias</option>
+                  <option value="10" selected>10 noticias</option>
+                  <option value="15">15 noticias</option>
+                  <option value="20">20 noticias</option>
+                </select>
+              </div>
+            </div>
+          </div>
+
+          <!-- Botón de acción -->
+          <div class="text-center">
+            <button 
+              type="submit" 
+              class="bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white px-8 py-4 rounded-lg text-lg font-medium transition-all shadow-lg hover:shadow-xl"
+              id="btn-comenzar"
+            >
+              <span class="flex items-center justify-center">
+                <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path>
+                </svg>
+                Comenzar Simulación
+              </span>
+            </button>
+          </div>
+        </form>
+
+        <!-- Área de progreso y resultados -->
+        <div id="area-resultados" class="hidden">
+          
+          <!-- Barra de progreso -->
+          <div id="progreso-contenedor" class="mb-6">
+            <div class="flex justify-between items-center mb-2">
+              <h3 class="font-medium text-gray-700">Procesando noticias...</h3>
+              <span id="progreso-texto" class="text-sm text-gray-500">0%</span>
+            </div>
+            <div class="w-full bg-gray-200 rounded-full h-3">
+              <div id="barra-progreso" class="bg-gradient-to-r from-blue-600 to-blue-700 h-3 rounded-full transition-all duration-300" style="width: 0%"></div>
+            </div>
+            <div id="paso-actual" class="text-sm text-gray-600 mt-2">Iniciando...</div>
+          </div>
+
+          <!-- Log de actividad -->
+          <div id="log-actividad" class="bg-gray-50 border border-gray-200 rounded-lg p-4 mb-6 max-h-64 overflow-y-auto">
+            <h4 class="font-medium text-gray-700 mb-2">Log de actividad:</h4>
+            <div id="log-contenido" class="space-y-1 text-sm font-mono">
+              <!-- Los logs se añadirán aquí dinámicamente -->
+            </div>
+          </div>
+
+          <!-- Resultado final -->
+          <div id="resultado-final" class="hidden bg-white border border-green-200 rounded-lg p-6">
+            <div class="flex items-center mb-4">
+              <svg class="w-6 h-6 text-green-600 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+              </svg>
+              <h3 class="text-lg font-semibold text-green-800">¡Simulación completada!</h3>
+            </div>
+            
+            <div class="space-y-4">
+              <div>
+                <h4 class="font-medium text-gray-700 mb-2">Resumen generado:</h4>
+                <div id="resumen-contenido" class="bg-gray-50 border border-gray-200 rounded p-4 whitespace-pre-wrap">
+                  <!-- El resumen se mostrará aquí -->
+                </div>
+              </div>
+              
+              <div class="flex space-x-4">
+                <div class="flex-1 bg-blue-50 border border-blue-200 rounded p-3">
+                  <div class="text-sm text-blue-600">Noticias procesadas</div>
+                  <div id="stat-noticias" class="text-2xl font-bold text-blue-800">-</div>
+                </div>
+                <div class="flex-1 bg-green-50 border border-green-200 rounded p-3">
+                  <div class="text-sm text-green-600">Tiempo total</div>
+                  <div id="stat-tiempo" class="text-2xl font-bold text-green-800">-</div>
+                </div>
+                <div class="flex-1 bg-purple-50 border border-purple-200 rounded p-3">
+                  <div class="text-sm text-purple-600">Palabras en resumen</div>
+                  <div id="stat-palabras" class="text-2xl font-bold text-purple-800">-</div>
+                </div>
+              </div>
+
+              <div class="text-center">
+                <button 
+                  onclick="reiniciarSimulacion()" 
+                  class="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded-lg font-medium transition"
+                >
+                  Nueva simulación
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <!-- Área de error -->
+          <div id="resultado-error" class="hidden bg-red-50 border border-red-200 rounded-lg p-6">
+            <div class="flex items-center mb-4">
+              <svg class="w-6 h-6 text-red-600 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+              </svg>
+              <h3 class="text-lg font-semibold text-red-800">Error en la simulación</h3>
+            </div>
+            <div id="error-mensaje" class="text-red-700">
+              <!-- El mensaje de error se mostrará aquí -->
+            </div>
+            <div class="mt-4 text-center">
+              <button 
+                onclick="reiniciarSimulacion()" 
+                class="bg-red-600 hover:bg-red-700 text-white px-6 py-2 rounded-lg font-medium transition"
+              >
+                Intentar de nuevo
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <script>
+    // Variables globales
+    let configuracionesDisponibles = [];
+    let configuracionSeleccionada = null;
+    let simulacionEnCurso = false;
+    let usuarioId = null; // Se asignará después del login
+    const API_BASE_URL = 'https://localhost:7298';
+
+    // PROTECCIÓN DE PÁGINA
+    document.addEventListener('DOMContentLoaded', function() {
+      // Esperamos un poco más para asegurar que el AuthManager esté completamente cargado
+      setTimeout(() => {
+        // Verificar autenticación antes de cargar contenido
+        if (!window.requireAuth()) {
+          return; // Se redirige automáticamente si no está autenticado
+        }
+        
+        // Obtener ID del usuario autenticado
+        usuarioId = window.getCurrentUserId();
+        
+        if (!usuarioId) {
+          console.error('No se pudo obtener el ID del usuario autenticado');
+          // Intentar de nuevo después de un momento
+          setTimeout(() => {
+            usuarioId = window.getCurrentUserId();
+            if (usuarioId) {
+              console.log('Usuario autenticado (segundo intento), ID:', usuarioId);
+              cargarConfiguraciones();
+            } else {
+              console.error('Aún no se puede obtener el ID del usuario, redirigiendo...');
+              window.location.href = '/login';
+            }
+          }, 1000);
+          return;
+        }
+        
+        console.log('Usuario autenticado, ID:', usuarioId);
+        
+        // Inicializar la página
+        cargarConfiguraciones();
+      }, 500); // Esperamos 500ms para que el AuthManager esté listo
+    });
+
+    // Cargar configuraciones disponibles
+    async function cargarConfiguraciones() {
+      try {
+        const response = await fetch(`${API_BASE_URL}/api/configuracion/obtener/${usuarioId}`);
+        const data = await response.json();
+        
+        if (data.success && data.data) {
+          configuracionesDisponibles = Array.isArray(data.data) ? data.data : [data.data];
+          // Filtrar solo configuraciones de email para la beta
+          configuracionesDisponibles = configuracionesDisponibles.filter(config => 
+            config.accionResumen === 'email'
+          );
+          actualizarSelectConfiguraciones();
+        } else {
+          mostrarError('No se encontraron configuraciones disponibles');
+        }
+      } catch (error) {
+        console.error('Error al cargar configuraciones:', error);
+        mostrarError('Error al cargar configuraciones');
+      }
+    }
+
+    // Actualizar select de configuraciones
+    function actualizarSelectConfiguraciones() {
+      const select = document.getElementById('select-configuracion-simulador');
+      select.innerHTML = '<option value="">Seleccionar configuración...</option>';
+      
+      if (configuracionesDisponibles.length === 0) {
+        select.innerHTML = '<option value="">No hay configuraciones de email disponibles</option>';
+        return;
+      }
+
+      configuracionesDisponibles.forEach(config => {
+        const option = document.createElement('option');
+        option.value = config.id;
+        option.textContent = `Configuración ${config.id} - ${config.hashtags || 'Sin hashtags'}`;
+        select.appendChild(option);
+      });
+    }
+
+    // Mostrar configuración seleccionada
+    window.mostrarConfiguracionSeleccionada = function(configId) {
+      const preview = document.getElementById('configuracion-preview');
+      
+      if (!configId) {
+        preview.style.display = 'none';
+        configuracionSeleccionada = null;
+        return;
+      }
+
+      configuracionSeleccionada = configuracionesDisponibles.find(c => c.id == configId);
+      
+      if (configuracionSeleccionada) {
+        document.getElementById('preview-hashtags').textContent = configuracionSeleccionada.hashtags || 'No especificados';
+        document.getElementById('preview-profundidad').textContent = configuracionSeleccionada.profundidadResumen || 'No especificada';
+        document.getElementById('preview-tono').textContent = configuracionSeleccionada.tonoResumen || 'No especificado';
+        document.getElementById('preview-accion').textContent = configuracionSeleccionada.accionResumen || 'No especificada';
+        
+        preview.style.display = 'block';
+      } else {
+        preview.style.display = 'none';
+      }
+    };
+
+    // Añadir log
+    function añadirLog(mensaje, tipo = 'info') {
+      const logContainer = document.getElementById('log-contenido');
+      const timestamp = new Date().toLocaleTimeString();
+      const colorClass = tipo === 'error' ? 'text-red-600' : tipo === 'success' ? 'text-green-600' : 'text-gray-600';
+      
+      const logEntry = document.createElement('div');
+      logEntry.className = colorClass;
+      logEntry.textContent = `[${timestamp}] ${mensaje}`;
+      
+      logContainer.appendChild(logEntry);
+      logContainer.scrollTop = logContainer.scrollHeight;
+    }
+
+    // Actualizar progreso
+    function actualizarProgreso(porcentaje, paso) {
+      document.getElementById('barra-progreso').style.width = `${porcentaje}%`;
+      document.getElementById('progreso-texto').textContent = `${porcentaje}%`;
+      document.getElementById('paso-actual').textContent = paso;
+    }
+
+    // Mostrar error
+    function mostrarError(mensaje) {
+      document.getElementById('error-mensaje').textContent = mensaje;
+      document.getElementById('resultado-error').classList.remove('hidden');
+      document.getElementById('resultado-final').classList.add('hidden');
+    }
+
+    // Reiniciar simulación
+    window.reiniciarSimulacion = function() {
+      document.getElementById('area-resultados').classList.add('hidden');
+      document.getElementById('resultado-final').classList.add('hidden');
+      document.getElementById('resultado-error').classList.add('hidden');
+      (document.getElementById('form-simulador') as HTMLFormElement).reset();
+      document.getElementById('configuracion-preview').style.display = 'none';
+      (document.getElementById('btn-comenzar') as HTMLButtonElement).disabled = false;
+      document.getElementById('log-contenido').innerHTML = '';
+      simulacionEnCurso = false;
+    };
+
+    // Procesar simulación
+    async function procesarSimulacion(formData) {
+      const urlNoticias = formData.get('url_noticias');
+      const configuracionId = formData.get('configuracion_id');
+      const enviarEmail = formData.get('enviar_email') === 'on';
+      const limiteNoticias = parseInt(formData.get('limite_noticias'));
+
+      const tiempoInicio = Date.now();
+
+      try {
+        // Paso 1: Validar URL
+        actualizarProgreso(10, 'Validando URL...');
+        añadirLog('Iniciando validación de URL');
+        await new Promise(resolve => setTimeout(resolve, 1000)); // Simular tiempo
+
+        // Paso 2: Extraer noticias
+        actualizarProgreso(30, 'Extrayendo noticias...');
+        añadirLog(`Extrayendo hasta ${limiteNoticias} noticias de: ${urlNoticias}`);
+        await new Promise(resolve => setTimeout(resolve, 2000));
+
+        // Paso 3: Procesar con IA
+        actualizarProgreso(60, 'Procesando con IA...');
+        añadirLog('Enviando noticias a Semantic Kernel para procesamiento');
+        
+        // Llamada real a tu API
+        const response = await fetch(`${API_BASE_URL}/api/simulador/procesar`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            urlNoticias,
+            configuracionId: parseInt(configuracionId),
+            limiteNoticias,
+            enviarEmail
+          })
+        });
+
+        if (!response.ok) {
+          throw new Error(`Error del servidor: ${response.status}`);
+        }
+
+        const resultado = await response.json();
+
+        // Paso 4: Finalizar
+        actualizarProgreso(100, 'Completado');
+        añadirLog('Simulación completada exitosamente', 'success');
+
+        // Mostrar resultados
+        const tiempoTotal = ((Date.now() - tiempoInicio) / 1000).toFixed(1);
+        document.getElementById('resumen-contenido').textContent = resultado.resumen || 'Resumen generado exitosamente';
+        document.getElementById('stat-noticias').textContent = resultado.noticiasProcessadas || limiteNoticias;
+        document.getElementById('stat-tiempo').textContent = `${tiempoTotal}s`;
+        document.getElementById('stat-palabras').textContent = resultado.resumen ? resultado.resumen.split(' ').length : '0';
+
+        if (enviarEmail && resultado.emailEnviado) {
+          añadirLog('Email enviado exitosamente', 'success');
+        }
+
+        document.getElementById('resultado-final').classList.remove('hidden');
+
+      } catch (error) {
+        console.error('Error en simulación:', error);
+        añadirLog(`Error: ${error.message}`, 'error');
+        mostrarError(error.message);
+      }
+    }
+
+    // Manejar envío del formulario
+    document.getElementById('form-simulador').addEventListener('submit', async function(e) {
+      e.preventDefault();
+      
+      if (simulacionEnCurso) return;
+      
+      const formData = new FormData((e.target) as HTMLFormElement);
+      
+      // Validaciones
+      if (!configuracionSeleccionada) {
+        alert('Por favor selecciona una configuración');
+        return;
+      }
+
+      // Iniciar simulación
+      simulacionEnCurso = true;
+      (document.getElementById('btn-comenzar') as HTMLButtonElement).disabled = true;
+      document.getElementById('area-resultados').classList.remove('hidden');
+      document.getElementById('resultado-final').classList.add('hidden');
+      document.getElementById('resultado-error').classList.add('hidden');
+      
+      await procesarSimulacion(formData);
+      
+      simulacionEnCurso = false;
+      (document.getElementById('btn-comenzar') as HTMLButtonElement).disabled = false;
+    });
+  </script>
+</BaseLayout>

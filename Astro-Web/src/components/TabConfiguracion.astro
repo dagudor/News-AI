@@ -1,0 +1,781 @@
+---
+// TabConfiguracion.astro
+interface Props {
+  subTab: string;
+}
+
+const { subTab } = Astro.props;
+---
+
+<!-- Submenú de configuración -->
+<div class="w-full bg-white border border-gray-200 shadow-lg rounded-lg p-6 mb-6">
+  <div class="flex space-x-4 border-b border-gray-200">
+    <a 
+      href="/configuracion?tab=configuracion&subtab=crear"
+      class={`px-4 py-2 font-medium border-b-2 transition-colors ${
+        subTab === 'crear' 
+          ? 'text-blue-600 border-blue-600' 
+          : 'text-gray-500 border-transparent hover:text-gray-700'
+      }`}
+    >
+      Nueva configuración
+    </a>
+    <a 
+      href="/configuracion?tab=configuracion&subtab=gestionar"
+      class={`px-4 py-2 font-medium border-b-2 transition-colors ${
+        subTab === 'gestionar' 
+          ? 'text-blue-600 border-blue-600' 
+          : 'text-gray-500 border-transparent hover:text-gray-700'
+      }`}
+    >
+      Gestionar configuraciones
+    </a>
+  </div>
+</div>
+
+{subTab === 'crear' ? (
+  <!-- Nueva configuración -->
+  <div class="w-full bg-white border border-gray-200 shadow-lg rounded-lg p-8 space-y-6">
+    <h1 class="text-2xl font-bold text-center text-gray-800">Nueva Configuración</h1>
+
+    <form id="form-crear-configuracion" class="space-y-6">
+      <div>
+        <label class="block text-sm font-medium text-gray-700 mb-2">Hashtags de interés</label>
+        <input 
+          type="text" 
+          name="hashtags" 
+          placeholder="#energia, #clima, #tecnologia" 
+          class="w-full p-3 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+          required
+        />
+      </div>
+
+      <div class="grid md:grid-cols-2 gap-4">
+        <div>
+          <label class="block text-sm font-medium text-gray-700 mb-2">Profundidad</label>
+          <select name="profundidad" class="w-full p-3 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+            <option value="breve">Breve</option>
+            <option value="medio" selected>Medio</option>
+            <option value="detallado">Detallado</option>
+          </select>
+        </div>
+
+        <div>
+          <label class="block text-sm font-medium text-gray-700 mb-2">Tono</label>
+          <select name="tono" class="w-full p-3 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+            <option value="neutral" selected>Neutral</option>
+            <option value="profesional">Profesional</option>
+            <option value="casual">Casual</option>
+          </select>
+        </div>
+      </div>
+
+      <!-- Solo Audio o Email -->
+      <div>
+        <label class="block text-sm font-medium text-gray-700 mb-4">¿Qué deseas hacer con el resumen generado?</label>
+        <div class="space-y-3">
+          <label class="flex items-center p-3 border border-gray-200 rounded-lg cursor-pointer hover:bg-gray-50">
+            <input type="radio" name="output" value="email" class="mr-3 text-blue-600 focus:ring-blue-500" required>
+            <div class="flex items-center">
+              <svg class="w-5 h-5 mr-2 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 4.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"></path>
+              </svg>
+              <span class="text-gray-700">Enviar por correo electrónico</span>
+            </div>
+          </label>
+          {/* Preparado para audio en una siguiente iteracion */}
+          {/* <label class="flex items-center p-3 border border-gray-200 rounded-lg cursor-pointer hover:bg-gray-50">
+            <input type="radio" name="output" value="audio" class="mr-3 text-blue-600 focus:ring-blue-500" required>
+            <div class="flex items-center">
+              <svg class="w-5 h-5 mr-2 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.536 3.464a9 9 0 010 12.728M12 14l4-4m0 0l-4-4m4 4H3"></path>
+              </svg>
+              <span class="text-gray-700">Generar audio o podcast</span>
+            </div>
+          </label> */}
+        </div>
+      </div>
+
+      <!-- Programación Automática -->
+      <div class="border-t border-gray-200 pt-6">
+        <h3 class="text-lg font-semibold text-gray-800 mb-4 flex items-center">
+          <svg class="w-5 h-5 mr-2 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+          </svg>
+          Programación Automática
+        </h3>
+        
+        <div class="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-6">
+          <p class="text-sm text-blue-800">
+            <strong>¡Novedad!</strong> Configura NewsAI para que funcione automáticamente. 
+            Una vez configurado, recibirás resúmenes sin intervención manual.
+          </p>
+        </div>
+
+        <div class="space-y-4">
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-2">Frecuencia de envío automático</label>
+            <select name="frecuencia" id="frecuencia-select" class="w-full p-3 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+              <option value="diaria">📅 Diaria (todos los días)</option>
+              <option value="semanal">📆 Semanal (cada 7 días)</option>
+              <option value="personalizada">⚙️ Personalizada (días específicos)</option>
+              <option value="manual">🔧 Solo manual (sin automatización)</option>
+            </select>
+          </div>
+
+          {/* Quería meter como opcion el que pudiese empezar hoy, lo dejo para iteraciones futuras */}
+          {/* <!-- Checkbox Comenzar desde hoy mejorado -->
+          <div class="p-4 border-2 border-gray-300 rounded-lg bg-white hover:border-blue-400 transition-colors">
+            <label class="flex items-start space-x-3 cursor-pointer">
+              <input 
+                type="checkbox" 
+                id="comenzar-hoy" 
+                name="comenzarHoy" 
+                class="w-6 h-6 text-blue-600 bg-white border-2 border-gray-400 rounded-md focus:ring-blue-500 focus:ring-2 mt-1 cursor-pointer checked:bg-blue-600 checked:border-blue-600"
+              >
+              <div class="flex-1">
+                <span class="text-sm font-semibold text-gray-800 flex items-center">
+                  <span class="mr-2">🚀</span>
+                  Comenzar desde hoy
+                </span>
+                <div class="text-xs text-gray-600 mt-1">
+                  Si está marcado, la programación comenzará hoy mismo a la hora indicada. 
+                  <br>⚠️ La hora debe ser posterior a la actual.
+                </div>
+              </div>
+            </label>
+          </div> */}
+
+          <div id="opciones-horario" class="grid md:grid-cols-2 gap-4">
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-2">Hora de envío</label>
+              <input 
+                type="time" 
+                name="horaEnvio" 
+                value="08:00" 
+                class="w-full p-3 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500" 
+              />
+            </div>
+          </div>
+
+          <div id="opciones-personalizada" class="hidden">
+            <label class="block text-sm font-medium text-gray-700 mb-3">Días de la semana</label>
+            <div class="grid grid-cols-7 gap-2">
+              <label class="flex flex-col items-center p-2 border border-gray-300 rounded-md cursor-pointer hover:bg-gray-50" title="Lunes">
+                <input type="checkbox" name="dias" value="1" class="mb-1" />
+                <span class="text-xs font-medium">Lun</span>
+              </label>
+              <label class="flex flex-col items-center p-2 border border-gray-300 rounded-md cursor-pointer hover:bg-gray-50" title="Martes">
+                <input type="checkbox" name="dias" value="2" class="mb-1" />
+                <span class="text-xs font-medium">Mar</span>
+              </label>
+              <label class="flex flex-col items-center p-2 border border-gray-300 rounded-md cursor-pointer hover:bg-gray-50" title="Miércoles">
+                <input type="checkbox" name="dias" value="3" class="mb-1" />
+                <span class="text-xs font-medium">Mié</span>
+              </label>
+              <label class="flex flex-col items-center p-2 border border-gray-300 rounded-md cursor-pointer hover:bg-gray-50" title="Jueves">
+                <input type="checkbox" name="dias" value="4" class="mb-1" />
+                <span class="text-xs font-medium">Jue</span>
+              </label>
+              <label class="flex flex-col items-center p-2 border border-gray-300 rounded-md cursor-pointer hover:bg-gray-50" title="Viernes">
+                <input type="checkbox" name="dias" value="5" class="mb-1" />
+                <span class="text-xs font-medium">Vie</span>
+              </label>
+              <label class="flex flex-col items-center p-2 border border-gray-300 rounded-md cursor-pointer hover:bg-gray-50" title="Sábado">
+                <input type="checkbox" name="dias" value="6" class="mb-1" />
+                <span class="text-xs font-medium">Sáb</span>
+              </label>
+              <label class="flex flex-col items-center p-2 border border-gray-300 rounded-md cursor-pointer hover:bg-gray-50" title="Domingo">
+                <input type="checkbox" name="dias" value="0" class="mb-1" />
+                <span class="text-xs font-medium">Dom</span>
+              </label>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="text-center pt-4">
+        <button 
+          type="submit" 
+          class="bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white px-8 py-3 rounded-full border-2 border-blue-500 text-sm font-medium transition-all shadow-lg hover:shadow-xl transform hover:scale-105 disabled:opacity-50 disabled:transform-none"
+        >
+          <svg class="w-4 h-4 inline mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
+          </svg>
+          Crear Configuración Automática
+        </button>
+      </div>
+    </form>
+  </div>
+) : (
+  <!-- Gestionar configuraciones -->
+  <div class="w-full bg-white border border-gray-200 shadow-lg rounded-lg p-8">
+    <div class="flex justify-between items-center mb-6">
+      <h1 class="text-2xl font-bold text-gray-800">Gestionar Configuraciones</h1>
+      <div class="flex gap-2">
+        <button id="pausar-todas" class="bg-orange-500 hover:bg-orange-600 text-white px-4 py-2 rounded-full border-2 border-orange-400 text-sm font-medium transition">
+          ⏸️ Pausar Todas
+        </button>
+        <button id="reanudar-todas" class="bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded-full border-2 border-green-400 text-sm font-medium transition">
+          ▶️ Reanudar Todas
+        </button>
+      </div>
+    </div>
+
+    <div id="lista-configuraciones" class="space-y-4">
+      <div class="text-center text-gray-500">Cargando configuraciones...</div>
+    </div>
+  </div>
+)}
+
+<!-- MODAL PARA EDITAR CONFIGURACIÓN -->
+<div id="modal-editar-config" class="fixed inset-0 bg-black bg-opacity-50 hidden z-50" onclick="cerrarModalConfig()">
+  <div class="flex items-center justify-center min-h-screen p-4">
+    <div class="bg-white rounded-lg shadow-xl max-w-2xl w-full p-6 max-h-[90vh] overflow-y-auto" onclick="event.stopPropagation()">
+      <div class="flex justify-between items-center mb-6">
+        <h2 class="text-xl font-bold text-gray-800">Editar Configuración</h2>
+        <button onclick="cerrarModalConfig()" class="text-gray-500 hover:text-gray-700">
+          <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+          </svg>
+        </button>
+      </div>
+
+      <!-- Configuración actual (solo lectura) -->
+      <div class="bg-gray-50 border border-gray-200 rounded-lg p-4 mb-6">
+        <h3 class="text-sm font-semibold text-gray-700 border-b border-gray-200 pb-2 mb-3">
+          Configuración actual
+        </h3>
+        <div class="grid grid-cols-2 gap-3 text-sm">
+          <div>
+            <span class="text-gray-600">Hashtags:</span>
+            <span class="ml-2 font-medium text-gray-800" id="modal-hashtags-actual">-</span>
+          </div>
+          <div>
+            <span class="text-gray-600">Profundidad:</span>
+            <span class="ml-2 font-medium text-gray-800" id="modal-profundidad-actual">-</span>
+          </div>
+          <div>
+            <span class="text-gray-600">Tono:</span>
+            <span class="ml-2 font-medium text-gray-800" id="modal-tono-actual">-</span>
+          </div>
+          <div>
+            <span class="text-gray-600">Frecuencia:</span>
+            <span class="ml-2 font-medium text-gray-800" id="modal-frecuencia-actual">-</span>
+          </div>
+          <div>
+            <span class="text-gray-600">Tipo:</span>
+            <span class="ml-2 font-medium text-gray-800" id="modal-tipo-actual">-</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Formulario de edición -->
+      <form id="form-editar-configuracion" class="space-y-4">
+        <input type="hidden" id="modal-config-id" name="configId" />
+        
+        <div>
+          <label class="block text-sm font-medium text-gray-700 mb-2">Hashtags de interés</label>
+          <input 
+            type="text" 
+            id="modal-hashtags-edit" 
+            name="hashtags" 
+            class="w-full p-3 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+            required
+          />
+        </div>
+
+        <div class="grid md:grid-cols-2 gap-4">
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-2">Profundidad</label>
+            <select id="modal-profundidad-edit" name="profundidad" class="w-full p-3 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+              <option value="breve">Breve</option>
+              <option value="medio">Medio</option>
+              <option value="detallado">Detallado</option>
+            </select>
+          </div>
+
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-2">Tono</label>
+            <select id="modal-tono-edit" name="tono" class="w-full p-3 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+              <option value="neutral">Neutral</option>
+              <option value="profesional">Profesional</option>
+              <option value="casual">Casual</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="grid md:grid-cols-2 gap-4">
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-2">Frecuencia</label>
+            <select id="modal-frecuencia-edit" name="frecuencia" class="w-full p-3 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500" onchange="manejarCambioFrecuenciaModal(this.value)">
+              <option value="diaria">📅 Diaria</option>
+              <option value="semanal">📆 Semanal</option>
+              <option value="personalizada">⚙️ Personalizada</option>
+              <option value="manual">🔧 Manual</option>
+            </select>
+          </div>
+        </div>
+
+        <!-- Opciones para frecuencia personalizada -->
+        <div id="modal-opciones-personalizada" class="hidden">
+          <label class="block text-sm font-medium text-gray-700 mb-3">Días de la semana</label>
+          <div class="grid grid-cols-7 gap-2">
+            <label class="flex flex-col items-center p-2 border border-gray-300 rounded-md cursor-pointer hover:bg-gray-50" title="Lunes">
+              <input type="checkbox" name="dias-modal" value="1" class="mb-1" />
+              <span class="text-xs font-medium">Lun</span>
+            </label>
+            <label class="flex flex-col items-center p-2 border border-gray-300 rounded-md cursor-pointer hover:bg-gray-50" title="Martes">
+              <input type="checkbox" name="dias-modal" value="2" class="mb-1" />
+              <span class="text-xs font-medium">Mar</span>
+            </label>
+            <label class="flex flex-col items-center p-2 border border-gray-300 rounded-md cursor-pointer hover:bg-gray-50" title="Miércoles">
+              <input type="checkbox" name="dias-modal" value="3" class="mb-1" />
+              <span class="text-xs font-medium">Mié</span>
+            </label>
+            <label class="flex flex-col items-center p-2 border border-gray-300 rounded-md cursor-pointer hover:bg-gray-50" title="Jueves">
+              <input type="checkbox" name="dias-modal" value="4" class="mb-1" />
+              <span class="text-xs font-medium">Jue</span>
+            </label>
+            <label class="flex flex-col items-center p-2 border border-gray-300 rounded-md cursor-pointer hover:bg-gray-50" title="Viernes">
+              <input type="checkbox" name="dias-modal" value="5" class="mb-1" />
+              <span class="text-xs font-medium">Vie</span>
+            </label>
+            <label class="flex flex-col items-center p-2 border border-gray-300 rounded-md cursor-pointer hover:bg-gray-50" title="Sábado">
+              <input type="checkbox" name="dias-modal" value="6" class="mb-1" />
+              <span class="text-xs font-medium">Sáb</span>
+            </label>
+            <label class="flex flex-col items-center p-2 border border-gray-300 rounded-md cursor-pointer hover:bg-gray-50" title="Domingo">
+              <input type="checkbox" name="dias-modal" value="0" class="mb-1" />
+              <span class="text-xs font-medium">Dom</span>
+            </label>
+          </div>
+        </div>
+
+        <div id="modal-opciones-horario">
+          <label class="block text-sm font-medium text-gray-700 mb-2">Hora de envío</label>
+          <input 
+            type="time" 
+            id="modal-hora-edit" 
+            name="horaEnvio" 
+            value="08:00" 
+            class="w-full p-3 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500" 
+          />
+        </div>
+
+        <div>
+          <label class="block text-sm font-medium text-gray-700 mb-4">¿Qué deseas hacer con el resumen generado?</label>
+          <div class="flex gap-4">
+            <label class="flex items-center">
+              <input type="radio" name="output" value="email" class="mr-2 text-blue-600 focus:ring-blue-500" required>
+              <span class="text-gray-700">📧 Email</span>
+            </label>
+            {/* Audio preparado par ala siguiente iteración */}
+            {/* <label class="flex items-center">
+              <input type="radio" name="output" value="audio" class="mr-2 text-blue-600 focus:ring-blue-500" required>
+              <span class="text-gray-700">🎧 Audio</span>
+            </label> */}
+          </div>
+        </div>
+
+        <div class="flex gap-4 pt-4">
+          <button 
+            type="submit" 
+            class="flex-1 bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-full border-2 border-blue-500 text-sm font-medium transition"
+          >
+            💾 Actualizar
+          </button>
+          <button 
+            type="button" 
+            onclick="cerrarModalConfig()" 
+            class="flex-1 bg-gray-300 hover:bg-gray-400 text-gray-700 px-4 py-2 rounded-full border-2 border-gray-400 text-sm font-medium transition"
+          >
+            ← Atrás
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<script>
+  // Variables globales
+  let usuarioId = null; // Se asignará dinámicamente
+  
+  document.addEventListener('DOMContentLoaded', () => {
+    console.log('Inicializando TabConfiguracion...');
+    
+    // Función para intentar obtener el usuario con reintentos
+    function obtenerUsuarioConReintentos(maxIntentos = 5, intervalo = 1000) {
+      return new Promise((resolve, reject) => {
+        let intentos = 0;
+        
+        function intentar() {
+          intentos++;
+          console.log(`Intento ${intentos} de obtener usuario autenticado...`);
+          
+          // Verificar si las funciones globales están disponibles
+          if (typeof window.getCurrentUserId !== 'function') {
+            console.log('Funciones de auth aún no disponibles...');
+            if (intentos < maxIntentos) {
+              setTimeout(intentar, intervalo);
+              return;
+            } else {
+              reject(new Error('Funciones de autenticación no disponibles'));
+              return;
+            }
+          }
+          
+          usuarioId = window.getCurrentUserId();
+          
+          if (usuarioId) {
+            console.log(`suario autenticado obtenido: ${usuarioId}`);
+            resolve(usuarioId);
+          } else {
+            console.log('Usuario aún no disponible...');
+            if (intentos < maxIntentos) {
+              setTimeout(intentar, intervalo);
+            } else {
+              reject(new Error('No se pudo obtener el ID del usuario'));
+            }
+          }
+        }
+        
+        intentar();
+      });
+    }
+    
+    // Inicializar solo cuando tengamos el usuario
+    obtenerUsuarioConReintentos()
+      .then((id) => {
+        usuarioId = id;
+        console.log('Inicializando configuraciones con usuario:', usuarioId);
+        
+        if (window.location.search.includes('tab=configuracion')) {
+          const subTab = new URLSearchParams(window.location.search).get('subtab');
+          
+          if (subTab === 'gestionar') {
+            cargarConfiguracionesParaGestionar();
+          }
+          
+          configurarFormularioCrear();
+          configurarFrecuencias();
+          configurarModal();
+          configurarBotonesMasivos();
+        }
+      })
+      .catch((error) => {
+        console.error('Error inicializando configuraciones:', error);
+        // Redirigir al login si no se puede obtener el usuario
+        window.location.href = '/login';
+      });
+  });
+
+  function configurarFormularioCrear() {
+    const form = document.getElementById('form-crear-configuracion');
+    if (!form) return;
+
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      
+      const formData = new FormData(e.target as HTMLFormElement);
+      const diasSeleccionados = [];
+      const checkboxesDias = document.querySelectorAll('input[name="dias"]:checked') as NodeListOf<HTMLInputElement>;
+      checkboxesDias.forEach(checkbox => {
+        diasSeleccionados.push(checkbox.value);
+      });
+
+      const data = {
+        usuarioId: usuarioId, //  Usar ID dinámico
+        hashtags: formData.get('hashtags'),
+        profundidadResumen: formData.get('profundidad'),
+        tonoResumen: formData.get('tono'),
+        accionResumen: formData.get('output'),
+        frecuencia: formData.get('frecuencia') || 'diaria',
+        horaEnvio: formData.get('horaEnvio') || '08:00',
+        diasPersonalizados: diasSeleccionados.length > 0 ? diasSeleccionados.join(',') : '1,2,3,4,5'
+      };
+
+      try {
+        const response = await fetch('https://localhost:7298/api/configuracion/crear', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(data),
+        });
+
+        const resultado = await response.json();
+        
+        if (resultado.success) {
+          alert('Configuración creada exitosamente');
+          (e.target as HTMLFormElement).reset();
+          
+          if (window.location.search.includes('subtab=gestionar')) {
+            cargarConfiguracionesParaGestionar();
+          }
+        } else {
+          alert(' Error: ' + resultado.message);
+        }
+      } catch (error) {
+        alert('Error de conexión. Verifica que el backend esté ejecutándose.');
+      }
+    });
+  }
+
+  function configurarFrecuencias() {
+    const selectFrecuencia = document.getElementById('frecuencia-select');
+    if (!selectFrecuencia) return;
+
+    selectFrecuencia.addEventListener('change', function() {
+      const opcionesPersonalizada = document.getElementById('opciones-personalizada');
+      
+      if ((this as HTMLFormElement).value === 'personalizada') {
+        opcionesPersonalizada.classList.remove('hidden');
+      } else {
+        opcionesPersonalizada.classList.add('hidden');
+      }
+    });
+  }
+
+  async function cargarConfiguracionesParaGestionar() {
+    const container = document.getElementById('lista-configuraciones');
+    if (!container) return;
+
+    container.innerHTML = '<div class="text-center text-gray-500">Cargando configuraciones...</div>';
+
+    try {
+      const response = await fetch(`https://localhost:7298/api/configuracion/obtener/${usuarioId}`); // Usar ID dinámico
+      const data = await response.json();
+      
+      if (data.success && data.data) {
+        const configuraciones = Array.isArray(data.data) ? data.data : [data.data];
+        mostrarConfiguraciones(configuraciones);
+      } else {
+        container.innerHTML = '<div class="text-center text-gray-500">No hay configuraciones guardadas</div>';
+      }
+    } catch (error) {
+      container.innerHTML = '<div class="text-center text-red-500">Error al cargar configuraciones: ' + error.message + '</div>';
+    }
+  }
+
+  function mostrarConfiguraciones(configuraciones) {
+    const container = document.getElementById('lista-configuraciones');
+    if (!container || configuraciones.length === 0) {
+      container.innerHTML = '<div class="text-center text-gray-500">No hay configuraciones creadas</div>';
+      return;
+    }
+
+    container.innerHTML = configuraciones.map(config => `
+      <div class="bg-gray-50 border border-gray-200 rounded-lg p-4 flex justify-between items-center">
+        <div>
+          <h3 class="font-medium">${config.hashtags || 'Sin hashtags'}</h3>
+          <p class="text-sm text-gray-600">
+            ${config.profundidadResumen || 'Breve'} • ${config.tonoResumen || 'Informal'} • ${config.frecuencia || 'Diaria'}
+          </p>
+          <p class="text-xs text-gray-500">
+            ${config.accionResumen || 'Email'} • ${config.activa ? 'Activa' : 'Pausada'}
+          </p>
+        </div>
+        <div class="flex space-x-2">
+          <button onclick="toggleConfiguracion(${config.id})" class="px-3 py-1 text-sm rounded-full border-2 ${config.activa ? 'bg-red-100 text-red-700 border-red-300' : 'bg-green-100 text-green-700 border-green-300'}">
+            ${config.activa ? 'Pausar' : 'Reanudar'}
+          </button>
+          <button onclick="abrirModalEditar(${config.id})" class="px-3 py-1 text-sm bg-blue-100 text-blue-700 rounded-full border-2 border-blue-300">
+            Editar
+          </button>
+        </div>
+      </div>
+    `).join('');
+  }
+
+  function configurarModal() {
+    const formEditar = document.getElementById('form-editar-configuracion');
+    if (!formEditar) return;
+
+    formEditar.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      
+      const formData = new FormData(e.target as HTMLFormElement);
+      const diasSeleccionados = [];
+      const checkboxesDias = document.querySelectorAll('input[name="dias-modal"]:checked') as NodeListOf<HTMLInputElement>;
+      checkboxesDias.forEach(checkbox => {
+        diasSeleccionados.push(checkbox.value);
+      });
+
+      const data = {
+        id: parseInt(formData.get('configId') as string),
+        hashtags: formData.get('hashtags'),
+        profundidadResumen: formData.get('profundidad'),
+        tonoResumen: formData.get('tono'),
+        accionResumen: formData.get('output'),
+        frecuencia: formData.get('frecuencia'),
+        horaEnvio: formData.get('horaEnvio'),
+        diasPersonalizados: diasSeleccionados.length > 0 ? diasSeleccionados.join(',') : '1,2,3,4,5'
+      };
+
+      try {
+        const response = await fetch('https://localhost:7298/api/configuracion/actualizar', {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(data),
+        });
+
+        const resultado = await response.json();
+        
+        if (resultado.success) {
+          alert(' Configuración actualizada exitosamente');
+          window.cerrarModalConfig();
+          cargarConfiguracionesParaGestionar();
+        } else {
+          alert(' Error: ' + resultado.message);
+        }
+      } catch (error) {
+        alert('Error de conexión. Verifica que el backend esté ejecutándose.');
+      }
+    });
+  }
+
+{/* Botones para pausar o reanudar las configuraciones */}
+  function configurarBotonesMasivos() {
+    const btnPausarTodas = document.getElementById('pausar-todas');
+    const btnReanudarTodas = document.getElementById('reanudar-todas');
+    
+    if (btnPausarTodas) {
+      btnPausarTodas.addEventListener('click', async () => {
+        if (confirm('¿Pausar TODAS las configuraciones?')) {
+          try {
+            const response = await fetch(`https://localhost:7298/api/configuracion/obtener/${usuarioId}`); // Usar ID dinámico
+            const data = await response.json();
+            
+            if (data.success && data.data) {
+              const configuraciones = Array.isArray(data.data) ? data.data : [data.data];
+              const activas = configuraciones.filter(c => c.activa);
+              
+              for (const config of activas) {
+                await fetch(`https://localhost:7298/api/configuracion/pausar/${config.id}`, {
+                  method: 'PUT',
+                  headers: { 'Content-Type': 'application/json' }
+                });
+              }
+              
+              alert(`${activas.length} configuraciones pausadas`);
+              cargarConfiguracionesParaGestionar();
+            }
+          } catch (error) {
+            alert('Error al pausar configuraciones');
+          }
+        }
+      });
+    }
+    
+    if (btnReanudarTodas) {
+      btnReanudarTodas.addEventListener('click', async () => {
+        if (confirm('¿Reanudar TODAS las configuraciones?')) {
+          try {
+            const response = await fetch(`https://localhost:7298/api/configuracion/obtener/${usuarioId}`); // Usar ID dinámico
+            const data = await response.json();
+            
+            if (data.success && data.data) {
+              const configuraciones = Array.isArray(data.data) ? data.data : [data.data];
+              const pausadas = configuraciones.filter(c => !c.activa);
+              
+              for (const config of pausadas) {
+                await fetch(`https://localhost:7298/api/configuracion/reanudar/${config.id}`, {
+                  method: 'PUT',
+                  headers: { 'Content-Type': 'application/json' }
+                });
+              }
+              
+              alert(`${pausadas.length} configuraciones reanudadas`);
+              cargarConfiguracionesParaGestionar();
+            }
+          } catch (error) {
+            alert('Error al reanudar configuraciones');
+          }
+        }
+      });
+    }
+  }
+
+  window.toggleConfiguracion = async (id) => {
+    try {
+      const response = await fetch(`https://localhost:7298/api/configuracion/obtener/${usuarioId}`); // Usar ID dinámico
+      const data = await response.json();
+      
+      if (data.success && data.data) {
+        const configuraciones = Array.isArray(data.data) ? data.data : [data.data];
+        const config = configuraciones.find(c => c.id === id);
+        
+        if (config) {
+          const endpoint = config.activa 
+            ? `https://localhost:7298/api/configuracion/pausar/${id}`
+            : `https://localhost:7298/api/configuracion/reanudar/${id}`;
+          
+          const toggleResponse = await fetch(endpoint, {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' }
+          });
+          
+          if (toggleResponse.ok) {
+            alert(config.activa ? 'Configuración pausada' : 'Configuración reanudada');
+            cargarConfiguracionesParaGestionar();
+          } else {
+            alert('Error al cambiar estado');
+          }
+        }
+      }
+    } catch (error) {
+      alert('Error de conexión: ' + error.message);
+    }
+  };
+
+  window.abrirModalEditar = async (configId) => {
+    try {
+      const response = await fetch(`https://localhost:7298/api/configuracion/obtener/${usuarioId}`); //Usar ID dinámico
+      const data = await response.json();
+      
+      if (data.success && data.data) {
+        const configuraciones = Array.isArray(data.data) ? data.data : [data.data];
+        const config = configuraciones.find(c => c.id === configId);
+        
+        if (config) {
+          document.getElementById('modal-hashtags-actual').textContent = config.hashtags || 'No especificados';
+          document.getElementById('modal-profundidad-actual').textContent = config.profundidadResumen || 'No especificada';
+          document.getElementById('modal-tono-actual').textContent = config.tonoResumen || 'No especificado';
+          document.getElementById('modal-frecuencia-actual').textContent = config.frecuencia || 'diaria';
+          document.getElementById('modal-tipo-actual').textContent = config.accionResumen || 'No especificada';
+          
+          (document.getElementById('modal-config-id') as HTMLInputElement).value = config.id;
+          (document.getElementById('modal-hashtags-edit')as HTMLInputElement).value = config.hashtags || '';
+          (document.getElementById('modal-profundidad-edit')as HTMLInputElement).value = config.profundidadResumen || 'breve';
+          (document.getElementById('modal-tono-edit')as HTMLInputElement).value = config.tonoResumen || 'neutral';
+          (document.getElementById('modal-frecuencia-edit')as HTMLInputElement).value = config.frecuencia || 'diaria';
+          (document.getElementById('modal-hora-edit')as HTMLInputElement).value = config.horaEnvio || '08:00';
+          
+        const outputRadios = document.querySelectorAll('input[name="output"]') as NodeListOf<HTMLInputElement>;
+
+        outputRadios.forEach(radio => {
+          radio.checked = radio.value === config.accionResumen;
+        });
+          
+          document.getElementById('modal-editar-config').classList.remove('hidden');
+        }
+      }
+    } catch (error) {
+      alert('Error al cargar los datos de la configuración');
+    }
+  };
+
+  window.cerrarModalConfig = () => {
+    document.getElementById('modal-editar-config').classList.add('hidden');
+  };
+
+  window.manejarCambioFrecuenciaModal = (frecuencia) => {
+    const opcionesPersonalizada = document.getElementById('modal-opciones-personalizada');
+    
+    if (frecuencia === 'personalizada') {
+      opcionesPersonalizada.classList.remove('hidden');
+    } else {
+      opcionesPersonalizada.classList.add('hidden');
+    }
+  };
+</script>

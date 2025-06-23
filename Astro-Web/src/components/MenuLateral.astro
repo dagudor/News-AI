@@ -1,0 +1,16 @@
+---
+// MenuLateral.astro
+interface Props {
+  tabActual: string;
+}
+
+const { tabActual } = Astro.props;
+---
+
+<aside class="w-48 bg-white border border-gray-200 rounded-lg p-4 h-fit self-start shadow-sm">
+  <nav class="space-y-3 text-sm font-medium">
+    <a href="/configuracion?tab=usuario" class={`block hover:text-blue-600 ${tabActual === 'usuario' ? 'font-bold text-blue-700' : ''}`}>General</a>
+    <a href="/configuracion?tab=configuracion" class={`block hover:text-blue-600 ${tabActual === 'configuracion' ? 'font-bold text-blue-700' : ''}`}>Configuración</a>
+    <a href="/configuracion?tab=urls" class={`block hover:text-blue-600 ${tabActual === 'urls' ? 'font-bold text-blue-700' : ''}`}>Gestión URLs</a>
+  </nav>
+</aside>

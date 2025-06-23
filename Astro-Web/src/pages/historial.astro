@@ -1,0 +1,521 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+export const prerender = false;
+---
+
+<BaseLayout title="Todos los Resúmenes - NewsAI">
+  <section class="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100">
+    <div class="container mx-auto px-6 py-12">
+      
+      <!-- Header -->
+      <div class="text-center mb-12">
+        <h1 class="text-4xl md:text-5xl font-bold text-gray-800 mb-4">
+          📰 Todos tus Resúmenes
+        </h1>
+        <p class="text-lg text-gray-600 max-w-2xl mx-auto">
+          Historial completo de todos los resúmenes generados
+        </p>
+      </div>
+
+      <!-- Controles superiores -->
+      <div class="flex justify-between items-center mb-8">
+        <div class="flex items-center space-x-4">
+          <a href="/" 
+             class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg font-medium transition flex items-center">
+            <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path>
+            </svg>
+            Volver al Inicio
+          </a>
+          
+          <!-- Filtros -->
+          <select id="filtro-periodo" 
+                  class="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500">
+            <option value="todos">Todos los períodos</option>
+            <option value="hoy">Hoy</option>
+            <option value="semana">Esta semana</option>
+            <option value="mes">Este mes</option>
+          </select>
+          
+          <select id="filtro-email" 
+                  class="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500">
+            <option value="todos">Todos los estados</option>
+            <option value="enviados">Solo enviados</option>
+            <option value="pendientes">Solo pendientes</option>
+          </select>
+        </div>
+
+        <!-- Estadísticas -->
+        <div id="estadisticas" class="text-right">
+          <div class="text-sm text-gray-600">Total de resúmenes</div>
+          <div id="total-resumenes" class="text-2xl font-bold text-blue-600">-</div>
+        </div>
+      </div>
+
+      <!-- Loading State -->
+      <div id="loading-resumenes" class="flex justify-center items-center h-64">
+        <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
+        <span class="ml-3 text-gray-600">Cargando resúmenes...</span>
+      </div>
+
+      <!-- Grid de Resúmenes -->
+      <div id="grid-resumenes" class="hidden grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+        <!-- Las cards se generarán dinámicamente aquí -->
+      </div>
+
+      <!-- Empty State -->
+      <div id="empty-state" class="hidden text-center py-16">
+        <div class="text-6xl mb-4">📝</div>
+        <h3 class="text-xl font-semibold text-gray-700 mb-2">No hay resúmenes</h3>
+        <p class="text-gray-600 mb-6">No se encontraron resúmenes que coincidan con los filtros seleccionados</p>
+        <button onclick="limpiarFiltros()" 
+                class="bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-lg font-medium transition">
+          Limpiar Filtros
+        </button>
+      </div>
+
+      <!-- Paginación -->
+      <div id="paginacion" class="hidden flex justify-center items-center mt-12 space-x-4">
+        <button id="prev-page" 
+                class="px-4 py-2 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition disabled:opacity-50"
+                disabled>
+          Anterior
+        </button>
+        
+        <div id="info-pagina" class="text-gray-600">
+          Página <span id="pagina-actual">1</span> de <span id="total-paginas">1</span>
+        </div>
+        
+        <button id="next-page" 
+                class="px-4 py-2 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition disabled:opacity-50">
+          Siguiente
+        </button>
+      </div>
+    </div>
+
+    <!-- Modal para Detalle de Resumen (mismo que index.astro) -->
+    <div id="modal-detalle" class="fixed inset-0 bg-black bg-opacity-50 hidden z-50" onclick="cerrarModalDetalle()">
+      <div class="flex items-center justify-center min-h-screen p-4">
+        <div class="bg-white rounded-xl shadow-2xl max-w-4xl w-full max-h-[90vh] overflow-y-auto" onclick="event.stopPropagation()">
+          
+          <!-- Header del Modal -->
+          <div class="sticky top-0 bg-white border-b border-gray-200 p-6 rounded-t-xl">
+            <div class="flex justify-between items-start">
+              <div>
+                <h2 id="modal-titulo" class="text-2xl font-bold text-gray-800">Resumen Detallado</h2>
+                <p id="modal-fecha" class="text-gray-600 mt-1">Cargando...</p>
+              </div>
+              <button onclick="cerrarModalDetalle()" class="text-gray-500 hover:text-gray-700 p-2">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                </svg>
+              </button>
+            </div>
+          </div>
+
+          <!-- Contenido del Modal (igual que index.astro) -->
+          <div class="p-6">
+            
+            <!-- Metadatos -->
+            <div class="grid md:grid-cols-3 gap-4 mb-6 p-4 bg-gray-50 rounded-lg">
+              <div class="text-center">
+                <div id="modal-noticias" class="text-2xl font-bold text-blue-600">-</div>
+                <div class="text-sm text-gray-600">Noticias Procesadas</div>
+              </div>
+              <div class="text-center">
+                <div id="modal-tiempo-lectura" class="text-2xl font-bold text-green-600">-</div>
+                <div class="text-sm text-gray-600">Tiempo de Lectura</div>
+              </div>
+              <div class="text-center">
+                <div id="modal-email-estado" class="text-2xl">📧</div>
+                <div class="text-sm text-gray-600">Email Enviado</div>
+              </div>
+            </div>
+
+            <!-- Configuración Usada -->
+            <div class="mb-6 p-4 border border-gray-200 rounded-lg">
+              <h4 class="font-semibold text-gray-700 mb-3">Configuración Utilizada</h4>
+              <div class="grid md:grid-cols-2 gap-3 text-sm">
+                <div>
+                  <span class="text-gray-600">Hashtags:</span>
+                  <span id="modal-config-hashtags" class="ml-2 font-medium">-</span>
+                </div>
+                <div>
+                  <span class="text-gray-600">Tono:</span>
+                  <span id="modal-config-tono" class="ml-2 font-medium">-</span>
+                </div>
+                <div>
+                  <span class="text-gray-600">Profundidad:</span>
+                  <span id="modal-config-profundidad" class="ml-2 font-medium">-</span>
+                </div>
+                <div>
+                  <span class="text-gray-600">Acción:</span>
+                  <span id="modal-config-accion" class="ml-2 font-medium">-</span>
+                </div>
+              </div>
+            </div>
+
+            <!-- Resumen Completo -->
+            <div class="mb-6">
+              <h4 class="font-semibold text-gray-700 mb-3">Resumen Completo</h4>
+              <div id="modal-contenido" class="prose prose-gray max-w-none bg-gray-50 p-6 rounded-lg leading-relaxed">
+                Cargando contenido...
+              </div>
+            </div>
+
+            <!-- URL Original -->
+            <div class="border-t border-gray-200 pt-4">
+              <h4 class="font-semibold text-gray-700 mb-2">Fuente Original</h4>
+              <a id="modal-url-origen" href="#" target="_blank" 
+                 class="text-blue-600 hover:text-blue-800 break-all text-sm">
+                Cargando URL...
+              </a>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </section>
+
+  <!-- JavaScript -->
+  <script>
+    // Variables globales
+    let todosLosResumenes = [];
+    let resumenesFiltrados = [];
+    let paginaActual = 1;
+    const resumenesPerPage = 12;
+    let usuarioId = null; // Se asignará después del login
+    const API_BASE_URL = 'https://localhost:7298';
+
+    // ===== PROTECCIÓN DE PÁGINA =====
+    document.addEventListener('DOMContentLoaded', function() {
+      // Esperamos un poco más para asegurar que el AuthManager esté completamente cargado
+      setTimeout(() => {
+        // Verificar autenticación antes de cargar contenido
+        if (!window.requireAuth()) {
+          return; // Se redirige automáticamente si no está autenticado
+        }
+        
+        // Obtener ID del usuario autenticado
+        usuarioId = window.getCurrentUserId();
+        
+        if (!usuarioId) {
+          console.error('No se pudo obtener el ID del usuario autenticado');
+          // Intentar de nuevo después de un momento
+          setTimeout(() => {
+            usuarioId = window.getCurrentUserId();
+            if (usuarioId) {
+              console.log('Usuario autenticado (segundo intento), ID:', usuarioId);
+              cargarTodosLosResumenes();
+            } else {
+              console.error('Aún no se puede obtener el ID del usuario, redirigiendo...');
+              window.location.href = '/login';
+            }
+          }, 1000);
+          return;
+        }
+        
+        console.log('Usuario autenticado, ID:', usuarioId);
+        
+        // Inicializar la página
+        console.log('Inicializando página Ver Todos');
+        cargarTodosLosResumenes();
+      }, 500); // Esperamos 500ms para que el AuthManager esté listo
+    });
+
+    // ===== CARGAR TODOS LOS RESÚMENES =====
+    async function cargarTodosLosResumenes() {
+      try {
+        console.log('Cargando todos los resúmenes...');
+        
+        const response = await fetch(`${API_BASE_URL}/api/simulador/historial/${usuarioId}?limite=1000`);
+        const data = await response.json();
+
+        if (data.success && data.data && data.data.length > 0) {
+          todosLosResumenes = data.data;
+          resumenesFiltrados = [...todosLosResumenes];
+          
+          console.log(`${todosLosResumenes.length} resúmenes cargados`);
+          
+          // Actualizar el numero de resumenes generados
+          document.getElementById('total-resumenes').textContent = todosLosResumenes.length.toString();
+          
+          // Mostrar grid
+          mostrarResumenes();
+          configurarFiltros();
+          configurarPaginacion();
+          
+        } else {
+          mostrarEstadoVacio();
+        }
+      } catch (error) {
+        console.error('Error cargando resúmenes:', error);
+        mostrarEstadoVacio();
+      } finally {
+        document.getElementById('loading-resumenes').classList.add('hidden');
+      }
+    }
+
+    // ===== MOSTRAR RESÚMENES EN GRID =====
+    function mostrarResumenes() {
+      const grid = document.getElementById('grid-resumenes');
+      const startIndex = (paginaActual - 1) * resumenesPerPage;
+      const endIndex = startIndex + resumenesPerPage;
+      const resumenesParaMostrar = resumenesFiltrados.slice(startIndex, endIndex);
+
+      if (resumenesParaMostrar.length === 0) {
+        grid.classList.add('hidden');
+        document.getElementById('empty-state').classList.remove('hidden');
+        document.getElementById('paginacion').classList.add('hidden');
+        return;
+      }
+
+      document.getElementById('empty-state').classList.add('hidden');
+      grid.classList.remove('hidden');
+      grid.innerHTML = '';
+
+      resumenesParaMostrar.forEach(resumen => {
+        const card = document.createElement('div');
+        card.className = 'bg-white rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1 cursor-pointer';
+        
+        // Determinar color del badge
+        const badgeColor = resumen.emailEnviado 
+          ? 'bg-green-100 text-green-800' 
+          : 'bg-yellow-100 text-yellow-800';
+        const badgeText = resumen.emailEnviado ? '✓ Enviado' : '⏳ Pendiente';
+        
+        card.innerHTML = `
+          <div onclick="abrirModalDetalle(${resumen.id})">
+            <!-- Header -->
+            <div class="p-4 border-b border-gray-100">
+              <div class="flex justify-between items-start mb-3">
+                <span class="px-2 py-1 ${badgeColor} rounded-full text-xs font-medium">
+                  ${badgeText}
+                </span>
+                <span class="text-xs text-gray-500">${resumen.fechaRelativa}</span>
+              </div>
+              
+              <h3 class="font-bold text-gray-800 text-base mb-2 line-clamp-2">
+                ${resumen.titulo}
+              </h3>
+              
+              <p class="text-gray-600 text-sm line-clamp-2 leading-relaxed">
+                ${resumen.extracto}
+              </p>
+            </div>
+
+            <!-- Metadatos -->
+            <div class="p-3 bg-gray-50">
+              <div class="flex justify-between items-center text-xs text-gray-500 mb-2">
+                <span>${resumen.noticiasProcessadas} noticias</span>
+                <span>${resumen.estadisticas.palabrasResumen} palabras</span>
+              </div>
+              <div class="text-xs text-gray-600">
+                <strong>Tono:</strong> ${resumen.configuracion.tono}
+              </div>
+            </div>
+
+            <!-- Hashtags -->
+            <div class="p-3">
+              <div class="flex flex-wrap gap-1">
+                ${resumen.configuracion.hashtags && resumen.configuracion.hashtags !== "Sin hashtags específicos" ? 
+                  resumen.configuracion.hashtags.split(',').slice(0, 3)
+                    .map(tag => `<span class="px-2 py-1 bg-blue-100 text-blue-800 rounded text-xs">${tag.trim()}</span>`)
+                    .join('') :
+                  '<span class="text-xs text-gray-400">Sin hashtags</span>'
+                }
+              </div>
+            </div>
+          </div>
+        `;
+        
+        grid.appendChild(card);
+      });
+
+      // Actualizar paginación
+      actualizarPaginacion();
+    }
+
+    // ===== CONFIGURAR FILTROS =====
+    function configurarFiltros() {
+      document.getElementById('filtro-periodo').addEventListener('change', aplicarFiltros);
+      document.getElementById('filtro-email').addEventListener('change', aplicarFiltros);
+    }
+
+    // Aplica los filtros a los resúmenes
+    function aplicarFiltros() {
+      const filtroPeriodo = (document.getElementById('filtro-periodo') as HTMLInputElement).value;
+      const filtroEmail = (document.getElementById('filtro-email')as HTMLInputElement).value;
+
+      resumenesFiltrados = todosLosResumenes.filter(resumen => {
+        // Filtro por período
+        let cumplePeriodo = true;
+        if (filtroPeriodo !== 'todos') {
+          const fechaResumen = new Date(resumen.fechaGeneracion);
+          const ahora = new Date();
+          
+          switch (filtroPeriodo) {
+            case 'hoy':
+              cumplePeriodo = fechaResumen.toDateString() === ahora.toDateString();
+              break;
+            case 'semana':
+              const inicioSemana = new Date(ahora.setDate(ahora.getDate() - 7));
+              cumplePeriodo = fechaResumen >= inicioSemana;
+              break;
+            case 'mes':
+              const inicioMes = new Date(ahora.getFullYear(), ahora.getMonth(), 1);
+              cumplePeriodo = fechaResumen >= inicioMes;
+              break;
+          }
+        }
+
+        // Filtro por email
+        let cumpleEmail = true;
+        if (filtroEmail !== 'todos') {
+          cumpleEmail = filtroEmail === 'enviados' ? resumen.emailEnviado : !resumen.emailEnviado;
+        }
+
+        return cumplePeriodo && cumpleEmail;
+      });
+
+      paginaActual = 1;
+      mostrarResumenes();
+    }
+
+    // ===== CONFIGURAR PAGINACIÓN =====
+    function configurarPaginacion() {
+      document.getElementById('prev-page').addEventListener('click', () => {
+        if (paginaActual > 1) {
+          paginaActual--;
+          mostrarResumenes();
+        }
+      });
+
+      document.getElementById('next-page').addEventListener('click', () => {
+        const totalPaginas = Math.ceil(resumenesFiltrados.length / resumenesPerPage);
+        if (paginaActual < totalPaginas) {
+          paginaActual++;
+          mostrarResumenes();
+        }
+      });
+    }
+
+    // ===== ACTUALIZAR PAGINACIÓN =====
+    function actualizarPaginacion() {
+      const totalPaginas = Math.ceil(resumenesFiltrados.length / resumenesPerPage);
+      
+      if (totalPaginas <= 1) {
+        document.getElementById('paginacion').classList.add('hidden');
+        return;
+      }
+
+      document.getElementById('paginacion').classList.remove('hidden');
+      document.getElementById('pagina-actual').textContent = paginaActual.toString();
+      document.getElementById('total-paginas').textContent = totalPaginas.toString();
+
+      // Actualizar botones
+      (document.getElementById('prev-page') as HTMLButtonElement).disabled = paginaActual === 1;
+      (document.getElementById('next-page') as HTMLButtonElement).disabled = paginaActual === totalPaginas;
+    }
+
+    // ===== LIMPIAR FILTROS =====
+    window.limpiarFiltros = function() {
+      (document.getElementById('filtro-periodo')as HTMLButtonElement).value = 'todos';
+      (document.getElementById('filtro-email')as HTMLButtonElement).value = 'todos';
+      aplicarFiltros();
+    };
+
+    // ===== MOSTRAR ESTADO VACÍO =====
+    function mostrarEstadoVacio() {
+      document.getElementById('empty-state').classList.remove('hidden');
+      document.getElementById('grid-resumenes').classList.add('hidden');
+    }
+
+    // ===== MODAL (igual que index.astro) =====
+    window.abrirModalDetalle = async function(resumenId) {
+      try {
+        console.log('Abriendo detalle del resumen:', resumenId);
+        
+        document.getElementById('modal-detalle').classList.remove('hidden');
+        document.getElementById('modal-contenido').innerHTML = 'Cargando contenido...';
+        
+        const resumen = todosLosResumenes.find(r => r.id === resumenId);
+        
+        if (resumen) {
+          mostrarDetalleResumen(resumen);
+        } else {
+          const response = await fetch(`${API_BASE_URL}/api/simulador/resumen/${resumenId}`);
+          const data = await response.json();
+          
+          if (data.success) {
+            mostrarDetalleResumen(data.data);
+          }
+        }
+      } catch (error) {
+        console.error('Error cargando detalle:', error);
+        document.getElementById('modal-contenido').innerHTML = 'Error al cargar el contenido';
+      }
+    };
+
+    function mostrarDetalleResumen(resumen) {
+      document.getElementById('modal-titulo').textContent = 
+        `Resumen del ${new Date(resumen.fechaGeneracion || Date.now()).toLocaleDateString()}`;
+      document.getElementById('modal-fecha').textContent = 
+        resumen.fechaFormateada || new Date(resumen.fechaGeneracion || Date.now()).toLocaleDateString();
+      document.getElementById('modal-noticias').textContent = resumen.noticiasProcessadas || 0;
+      document.getElementById('modal-tiempo-lectura').textContent = 
+        Math.ceil((resumen.contenidoCompleto?.split(' ').length || 0) / 200) + ' min';
+      document.getElementById('modal-email-estado').textContent = resumen.emailEnviado ? '' : '⏳';
+      
+      // Configuración
+      document.getElementById('modal-config-hashtags').textContent = 
+        resumen.configuracion?.hashtags || 'Sin hashtags';
+      document.getElementById('modal-config-tono').textContent = 
+        resumen.configuracion?.tono || 'Estándar';
+      document.getElementById('modal-config-profundidad').textContent = 
+        resumen.configuracion?.profundidad || 'Media';
+      document.getElementById('modal-config-accion').textContent = 
+        resumen.configuracion?.accion || 'Email';
+      
+      // Contenido
+      document.getElementById('modal-contenido').innerHTML = 
+        (resumen.contenidoCompleto || resumen.contenidoResumen || 'No disponible').replace(/\n/g, '<br>');
+      
+      // URL
+      const urlLink = document.getElementById('modal-url-origen') as HTMLAnchorElement;
+      urlLink.href = resumen.urlOrigen || '#';
+      urlLink.textContent = resumen.urlOrigen || 'No disponible';
+    }
+
+    window.cerrarModalDetalle = function() {
+      document.getElementById('modal-detalle').classList.add('hidden');
+    };
+
+    // Cerrar modal con Escape
+    document.addEventListener('keydown', function(e) {
+      if (e.key === 'Escape') {
+        window.cerrarModalDetalle();
+      }
+    });
+
+  </script>
+
+  <!-- Estilos -->
+  <style>
+    .line-clamp-2 {
+      display: -webkit-box;
+      -webkit-line-clamp: 2;
+      -webkit-box-orient: vertical;
+      overflow: hidden;
+    }
+
+    .prose {
+      line-height: 1.7;
+    }
+
+    .prose p {
+      margin-bottom: 1em;
+    }
+  </style>
+</BaseLayout>

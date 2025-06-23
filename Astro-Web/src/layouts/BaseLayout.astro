@@ -1,0 +1,325 @@
+---
+import BaseHead from "@/components/BaseHead.astro";
+import Navigation from "@/components/global/Navigation.astro";
+import Footer from "@/components/global/Footer.astro";
+
+export interface Props {
+  title: string;
+}
+
+const { title } = Astro.props;
+---
+
+<html lang="es">
+  <head>
+    <BaseHead />
+    <title>{title}</title>
+    
+    <!-- Sistema de Autenticación -->
+    <script>
+      // auth.js - Sistema de autenticación para NewsAI
+      class AuthManager {
+        constructor() {
+          this.currentUser = null;
+          this.sessionKey = 'newsai_session';
+          this.userKey = 'newsai_user';
+          this.init();
+        }
+
+        init() {
+          this.loadUserFromStorage();
+          this.setupGlobalAuth();
+        }
+
+        loadUserFromStorage() {
+          try {
+            const sessionActive = localStorage.getItem(this.sessionKey);
+            const userData = localStorage.getItem(this.userKey);
+            
+            if (sessionActive === 'active' && userData) {
+              this.currentUser = JSON.parse(userData);
+              window.currentUser = this.currentUser;
+              console.log('Sesión cargada:', this.currentUser.nombre);
+            }
+          } catch (error) {
+            console.error('Error cargando sesión:', error);
+            this.clearSession();
+          }
+        }
+
+        setupGlobalAuth() {
+          window.authManager = this;
+          window.isAuthenticated = () => this.isAuthenticated();
+          window.getCurrentUser = () => this.getCurrentUser();
+          window.getCurrentUserId = () => this.getCurrentUserId();
+          window.logout = () => this.logout();
+          window.requireAuth = () => this.requireAuth();
+          window.redirectIfAuthenticated = () => this.redirectIfAuthenticated();
+        }
+
+        isAuthenticated() {
+          return this.currentUser !== null && localStorage.getItem(this.sessionKey) === 'active';
+        }
+
+        getCurrentUser() {
+          return this.currentUser;
+        }
+
+        getCurrentUserId() {
+          return this.currentUser?.id || null;
+        }
+
+        saveSession(userData) {
+          try {
+            this.currentUser = userData;
+            window.currentUser = userData;
+            localStorage.setItem(this.sessionKey, 'active');
+            localStorage.setItem(this.userKey, JSON.stringify(userData));
+            console.log('Sesión guardada para:', userData.nombre);
+          } catch (error) {
+            console.error('Error guardando sesión:', error);
+          }
+        }
+
+        clearSession() {
+          this.currentUser = null;
+          window.currentUser = null;
+          localStorage.removeItem(this.sessionKey);
+          localStorage.removeItem(this.userKey);
+          console.log('Sesión limpiada');
+        }
+
+        async logout() {
+          try {
+            await fetch('https://localhost:7298/api/auth/logout', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' }
+            });
+          } catch (error) {
+            console.error('Error en logout del servidor:', error);
+          }
+          
+          this.clearSession();
+          
+          if (window.location.pathname !== '/login') {
+            window.location.href = '/login';
+          }
+        }
+
+        requireAuth() {
+          if (!this.isAuthenticated()) {
+            console.log('Acceso denegado - redirigiendo al login');
+            window.location.href = '/login';
+            return false;
+          }
+          return true;
+        }
+
+        redirectIfAuthenticated() {
+          if (this.isAuthenticated()) {
+            console.log('Usuario ya autenticado - redirigiendo al home');
+            window.location.href = '/';
+            return true;
+          }
+          return false;
+        }
+
+        renderUserInfo(containerId = 'user-info') {
+          const container = document.getElementById(containerId);
+          if (!container) return;
+
+          // También controlar la visibilidad del menú autenticado
+          const navAuthenticated = document.getElementById('nav-authenticated');
+          const navAuthenticatedMobile = document.getElementById('nav-authenticated-mobile');
+
+          if (this.isAuthenticated()) {
+            // Mostrar info del usuario
+            container.innerHTML = `
+              <div class="flex items-center space-x-3">
+                <div class="flex items-center space-x-2">
+                  <div class="w-8 h-8 bg-blue-600 text-white rounded-full flex items-center justify-center text-sm font-medium">
+                    ${this.currentUser.nombre.charAt(0).toUpperCase()}
+                  </div>
+                  <span class="text-sm font-medium text-gray-700">
+                    ${this.currentUser.nombre}
+                  </span>
+                </div>
+                <button 
+                  onclick="window.authManager.logout()" 
+                  class="text-sm text-red-600 hover:text-red-700 font-medium px-2 py-1 rounded hover:bg-red-50"
+                >
+                  Salir
+                </button>
+              </div>
+            `;
+            
+            // Mostrar menú autenticado
+            if (navAuthenticated) {
+              navAuthenticated.classList.remove('hidden');
+              navAuthenticated.classList.add('flex');
+            }
+            if (navAuthenticatedMobile) {
+              navAuthenticatedMobile.classList.remove('hidden');
+            }
+          } else {
+            // Solo mostrar botón de login
+            container.innerHTML = `
+              <a href="/login" class="text-sm text-blue-600 hover:text-blue-700 font-medium px-3 py-2 bg-blue-50 rounded-lg hover:bg-blue-100">
+                Iniciar Sesión
+              </a>
+            `;
+            
+            // Ocultar menú autenticado
+            if (navAuthenticated) {
+              navAuthenticated.classList.add('hidden');
+              navAuthenticated.classList.remove('flex');
+            }
+            if (navAuthenticatedMobile) {
+              navAuthenticatedMobile.classList.add('hidden');
+            }
+          }
+        }
+      }
+
+      // Inicializar el sistema de auth cuando se carga el DOM
+      document.addEventListener('DOMContentLoaded', () => {
+        console.log('Inicializando AuthManager...');
+        
+        if (!window.authManager) {
+          window.authManager = new AuthManager();
+        }
+        
+        // Asegurar que las funciones estén disponibles globalmente
+        window.isAuthenticated = () => window.authManager.isAuthenticated();
+        window.getCurrentUser = () => window.authManager.getCurrentUser();
+        window.getCurrentUserId = () => window.authManager.getCurrentUserId();
+        window.logout = () => window.authManager.logout();
+        window.requireAuth = () => window.authManager.requireAuth();
+        window.redirectIfAuthenticated = () => window.authManager.redirectIfAuthenticated();
+        
+        console.log(' AuthManager inicializado, funciones globales disponibles');
+        
+        // Auto-renderizar info de usuario si existe el contenedor
+        setTimeout(() => {
+          window.authManager?.renderUserInfo();
+        }, 100);
+      });
+
+      // Función global para obtener el ID del usuario actual
+      window.getCurrentUserId = function() {
+        return window.authManager?.getCurrentUserId() || null;
+      };
+    </script>
+  </head>
+  
+  <body class="bg-white flex flex-col min-h-screen">
+    <!-- Navegación mejorada -->
+    <nav class="bg-white border-b border-gray-200 shadow-sm">
+      <div class="max-w-7xl mx-auto px-4 py-4 flex items-center justify-between">
+        <!-- Logo -->
+        <a href="/" class="text-xl font-bold text-blue-600">
+          NewsAI
+        </a>
+
+        <!-- Menú de navegación -->
+        <div class="hidden md:flex items-center space-x-6">
+          <!-- Enlaces que solo se muestran cuando está logueado -->
+          <div id="nav-authenticated" class="hidden items-center space-x-6">
+            <a href="/" class="text-gray-600 hover:text-blue-600 font-medium">
+              Inicio
+            </a>
+            <a href="/simulador" class="text-gray-600 hover:text-blue-600 font-medium">
+              Simulador
+            </a>
+            <a href="/historial" class="text-gray-600 hover:text-blue-600 font-medium">
+              Historial
+            </a>
+            <a href="/configuracion" class="text-gray-600 hover:text-blue-600 font-medium">
+              Configuración
+            </a>
+            <div class="w-px h-6 bg-gray-300"></div>
+          </div>
+          
+          <!-- Info del usuario (incluye botón login si no está autenticado) -->
+          <div id="user-info">
+            <!-- Info del usuario se renderiza aquí automáticamente -->
+          </div>
+        </div>
+
+        <!-- Menú móvil (hamburguesa) -->
+        <div class="md:hidden">
+          <button id="mobile-menu-button" class="text-gray-600 hover:text-blue-600">
+            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path>
+            </svg>
+          </button>
+        </div>
+      </div>
+
+      <!-- Menú móvil expandido -->
+      <div id="mobile-menu" class="hidden md:hidden">
+        <div class="px-4 py-4 border-t border-gray-200 space-y-3">
+          <!-- Enlaces móviles que solo se muestran cuando está logueado -->
+          <div id="nav-authenticated-mobile" class="hidden space-y-3">
+            <a href="/" class="block text-gray-600 hover:text-blue-600 font-medium">
+              Inicio
+            </a>
+            <a href="/simulador" class="block text-gray-600 hover:text-blue-600 font-medium">
+              Simulador
+            </a>
+            <a href="/historial" class="block text-gray-600 hover:text-blue-600 font-medium">
+              Historial
+            </a>
+            <a href="/configuracion" class="block text-gray-600 hover:text-blue-600 font-medium">
+              Configuración
+            </a>
+            <div class="border-t border-gray-200 pt-3"></div>
+          </div>
+          
+          <!-- Info del usuario móvil -->
+          <div id="user-info-mobile">
+            <!-- Info del usuario móvil se renderiza aquí -->
+          </div>
+        </div>
+      </div>
+    </nav>
+
+    <!-- Contenido principal -->
+    <main class="flex-grow">
+      <slot />
+    </main>
+
+    <!-- Footer -->
+    <Footer />
+
+    <!-- Scripts adicionales -->
+    <script>
+      // Manejar menú móvil
+      document.addEventListener('DOMContentLoaded', () => {
+        const mobileMenuButton = document.getElementById('mobile-menu-button');
+        const mobileMenu = document.getElementById('mobile-menu');
+        
+        if (mobileMenuButton && mobileMenu) {
+          mobileMenuButton.addEventListener('click', () => {
+            mobileMenu.classList.toggle('hidden');
+          });
+        }
+
+        // Renderizar info de usuario también en móvil
+        setTimeout(() => {
+          if (window.authManager) {
+            window.authManager.renderUserInfo('user-info-mobile');
+          }
+        }, 150);
+
+        // Función global para que los componentes obtengan el ID del usuario
+        window.getCurrentUserIdForTabs = function() {
+          return window.getCurrentUserId();
+        };
+      });
+    </script>
+
+    <!-- Slot para scripts adicionales -->
+    <slot name="scripts" />
+  </body>
+</html>

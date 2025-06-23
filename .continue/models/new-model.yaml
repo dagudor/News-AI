@@ -1,0 +1,29 @@
+name: News AI Models
+version: 0.0.1
+schema: v1
+
+models:
+  - provider: openai
+    model: gpt-4o
+    apiKey: ${{ secrets.OPENAI_API_KEY }}
+    name: GPT-4o
+    roles:
+      - chat
+      - edit
+      - apply
+
+  - provider: openai
+    model: gpt-3.5-turbo
+    apiKey: ${{ secrets.OPENAI_API_KEY }}
+    name: GPT-3.5 Turbo
+    roles:
+      - chat
+      - apply
+
+  - provider: anthropic
+    model: claude-3-sonnet-20240229
+    apiKey: ${{ secrets.ANTHROPIC_API_KEY }}
+    name: Claude 3.5 Sonnet
+    roles:
+      - chat
+      - edit
