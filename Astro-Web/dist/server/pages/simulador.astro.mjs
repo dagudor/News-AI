@@ -1,0 +1,41 @@
+import { c as createComponent, r as renderComponent, a as renderTemplate, m as maybeRenderHead, e as renderScript } from '../chunks/astro/server_MJG1I7oa.mjs';
+import 'kleur/colors';
+import { $ as $$BaseLayout } from '../chunks/BaseLayout_Bnmyb4hm.mjs';
+export { renderers } from '../renderers.mjs';
+
+const prerender = false;
+const $$Simulador = createComponent(async ($$result, $$props, $$slots) => {
+  return renderTemplate`${renderComponent($$result, "BaseLayout", $$BaseLayout, { "title": "Simulador de Noticias IA" }, { "default": async ($$result2) => renderTemplate` ${maybeRenderHead()}<section class="flex justify-center px-6 py-12"> <div class="max-w-4xl w-full"> <!-- Header --> <div class="text-center mb-8"> <h1 class="text-3xl font-bold text-gray-800 mb-2">Simulador de NewsAI</h1> <div class="bg-blue-50 border border-blue-200 rounded-lg p-4 mt-4"> <p class="text-blue-800 text-sm"> <strong>Versión Beta:</strong> Esta herramienta te permite probar cómo funcionará el sistema de resumen automático de noticias
+</p> </div> </div> <!-- Formulario principal --> <div class="bg-white border border-gray-200 shadow-lg rounded-lg p-8 space-y-6"> <form id="form-simulador" class="space-y-6"> <!-- URL de entrada --> <div> <label class="block text-sm font-medium text-gray-700 mb-2">
+URL de noticias RSS/Web
+</label> <input type="url" name="url_noticias" placeholder="https://ejemplo.com/rss" class="w-full p-3 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500" required> <p class="text-xs text-gray-500 mt-1">
+Introduce la URL de un feed RSS o sitio web de noticias
+</p> </div> <!-- Selector de configuración --> <div> <label class="block text-sm font-medium text-gray-700 mb-2">
+¿Qué configuración aplicar?
+</label> <select name="configuracion_id" class="w-full p-3 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500" onchange="mostrarConfiguracionSeleccionada(this.value)" id="select-configuracion-simulador" required> <option value="">Seleccionar configuración...</option> </select> </div> <!-- Vista previa de configuración seleccionada --> <div id="configuracion-preview" class="bg-gray-50 border border-gray-200 rounded-lg p-4 space-y-3" style="display: none;"> <h3 class="text-sm font-semibold text-gray-700 border-b border-gray-200 pb-2">
+Configuración seleccionada
+</h3> <div class="grid grid-cols-2 gap-3 text-sm"> <div> <span class="text-gray-600">Hashtags:</span> <span class="ml-2 font-medium text-gray-800" id="preview-hashtags">-</span> </div> <div> <span class="text-gray-600">Profundidad:</span> <span class="ml-2 font-medium text-gray-800" id="preview-profundidad">-</span> </div> <div> <span class="text-gray-600">Tono:</span> <span class="ml-2 font-medium text-gray-800" id="preview-tono">-</span> </div> <div> <span class="text-gray-600">Salida:</span> <span class="ml-2 font-medium text-gray-800" id="preview-accion">-</span> </div> </div> </div> <!-- Opciones adicionales --> <div class="bg-blue-50 border border-blue-200 rounded-lg p-4"> <h4 class="font-medium text-blue-800 mb-3">Opciones de simulación</h4> <div class="space-y-3"> <label class="flex items-center"> <input type="checkbox" name="enviar_email" class="mr-3 text-blue-600" checked> <span class="text-blue-700">Enviar resultado por email (solo para configuraciones de email)</span> </label> <div> <label class="block text-sm font-medium text-blue-700 mb-1">
+Límite de noticias a procesar
+</label> <select name="limite_noticias" class="w-32 p-2 border border-blue-300 rounded-md text-blue-700"> <option value="5">5 noticias</option> <option value="10" selected>10 noticias</option> <option value="15">15 noticias</option> <option value="20">20 noticias</option> </select> </div> </div> </div> <!-- Botón de acción --> <div class="text-center"> <button type="submit" class="bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white px-8 py-4 rounded-lg text-lg font-medium transition-all shadow-lg hover:shadow-xl" id="btn-comenzar"> <span class="flex items-center justify-center"> <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"> <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path> </svg>
+Comenzar Simulación
+</span> </button> </div> </form> <!-- Área de progreso y resultados --> <div id="area-resultados" class="hidden"> <!-- Barra de progreso --> <div id="progreso-contenedor" class="mb-6"> <div class="flex justify-between items-center mb-2"> <h3 class="font-medium text-gray-700">Procesando noticias...</h3> <span id="progreso-texto" class="text-sm text-gray-500">0%</span> </div> <div class="w-full bg-gray-200 rounded-full h-3"> <div id="barra-progreso" class="bg-gradient-to-r from-blue-600 to-blue-700 h-3 rounded-full transition-all duration-300" style="width: 0%"></div> </div> <div id="paso-actual" class="text-sm text-gray-600 mt-2">Iniciando...</div> </div> <!-- Log de actividad --> <div id="log-actividad" class="bg-gray-50 border border-gray-200 rounded-lg p-4 mb-6 max-h-64 overflow-y-auto"> <h4 class="font-medium text-gray-700 mb-2">Log de actividad:</h4> <div id="log-contenido" class="space-y-1 text-sm font-mono"> <!-- Los logs se añadirán aquí dinámicamente --> </div> </div> <!-- Resultado final --> <div id="resultado-final" class="hidden bg-white border border-green-200 rounded-lg p-6"> <div class="flex items-center mb-4"> <svg class="w-6 h-6 text-green-600 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"> <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path> </svg> <h3 class="text-lg font-semibold text-green-800">¡Simulación completada!</h3> </div> <div class="space-y-4"> <div> <h4 class="font-medium text-gray-700 mb-2">Resumen generado:</h4> <div id="resumen-contenido" class="bg-gray-50 border border-gray-200 rounded p-4 whitespace-pre-wrap"> <!-- El resumen se mostrará aquí --> </div> </div> <div class="flex space-x-4"> <div class="flex-1 bg-blue-50 border border-blue-200 rounded p-3"> <div class="text-sm text-blue-600">Noticias procesadas</div> <div id="stat-noticias" class="text-2xl font-bold text-blue-800">-</div> </div> <div class="flex-1 bg-green-50 border border-green-200 rounded p-3"> <div class="text-sm text-green-600">Tiempo total</div> <div id="stat-tiempo" class="text-2xl font-bold text-green-800">-</div> </div> <div class="flex-1 bg-purple-50 border border-purple-200 rounded p-3"> <div class="text-sm text-purple-600">Palabras en resumen</div> <div id="stat-palabras" class="text-2xl font-bold text-purple-800">-</div> </div> </div> <div class="text-center"> <button onclick="reiniciarSimulacion()" class="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded-lg font-medium transition">
+Nueva simulación
+</button> </div> </div> </div> <!-- Área de error --> <div id="resultado-error" class="hidden bg-red-50 border border-red-200 rounded-lg p-6"> <div class="flex items-center mb-4"> <svg class="w-6 h-6 text-red-600 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"> <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path> </svg> <h3 class="text-lg font-semibold text-red-800">Error en la simulación</h3> </div> <div id="error-mensaje" class="text-red-700"> <!-- El mensaje de error se mostrará aquí --> </div> <div class="mt-4 text-center"> <button onclick="reiniciarSimulacion()" class="bg-red-600 hover:bg-red-700 text-white px-6 py-2 rounded-lg font-medium transition">
+Intentar de nuevo
+</button> </div> </div> </div> </div> </div> </section> ${renderScript($$result2, "C:/Users/Daniel/Desktop/News AI/Astro-Web/src/pages/simulador.astro?astro&type=script&index=0&lang.ts")} ` })}`;
+}, "C:/Users/Daniel/Desktop/News AI/Astro-Web/src/pages/simulador.astro", void 0);
+
+const $$file = "C:/Users/Daniel/Desktop/News AI/Astro-Web/src/pages/simulador.astro";
+const $$url = "/simulador";
+
+const _page = /*#__PURE__*/Object.freeze(/*#__PURE__*/Object.defineProperty({
+  __proto__: null,
+  default: $$Simulador,
+  file: $$file,
+  prerender,
+  url: $$url
+}, Symbol.toStringTag, { value: 'Module' }));
+
+const page = () => _page;
+
+export { page };
