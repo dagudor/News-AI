@@ -115,7 +115,7 @@ try
         
         // FORZAR migración completa
         context.Database.EnsureDeleted(); // Borra BD anterior
-        context.Database.EnsureCreated();  // Crea BD nueva
+       context.Database.Migrate();
         
         Console.WriteLine("Database initialized successfully");
     }
