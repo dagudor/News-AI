@@ -1,0 +1,22 @@
+
+services:
+  - type: web
+    name: newsai
+    env: node
+    buildCommand: |
+      echo "🏗️ Building frontend from Astro-Web..."
+      cd Astro-Web
+      npm install
+      npm run build
+      echo "📁 Creating backend wwwroot..."
+      mkdir -p ../NewsAI/wwwroot
+      echo "📁 Copying built files..."
+      cp -r dist/* ../NewsAI/wwwroot/
+      echo "✅ Frontend ready"
+    startCommand: |
+      echo "🚀 Starting .NET backend..."
+      cd NewsAI
+      dotnet run --urls=http://0.0.0.0:$PORT
+    envVars:
+      - key: ASPNETCORE_ENVIRONMENT
+        value: Production
