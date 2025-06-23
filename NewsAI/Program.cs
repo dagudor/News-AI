@@ -114,4 +114,11 @@ app.UseAuthorization();
 
 app.MapControllers();
 
+app.UseRouting();
+
+// Servir archivos estáticos del frontend
+app.UseStaticFiles();
+
+// Ruta fallback para la PWA
+app.MapFallbackToFile("index.html");
 app.Run();
