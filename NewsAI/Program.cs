@@ -112,7 +112,11 @@ try
     using (var scope = app.Services.CreateScope())
     {
         var context = scope.ServiceProvider.GetRequiredService<AppDbContext>();
-        context.Database.EnsureCreated();
+        
+        // FORZAR migración completa
+        context.Database.EnsureDeleted(); // Borra BD anterior
+        context.Database.EnsureCreated();  // Crea BD nueva
+        
         Console.WriteLine("Database initialized successfully");
     }
 }
